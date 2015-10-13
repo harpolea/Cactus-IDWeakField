@@ -1,7 +1,7 @@
 # Main make.code.defn file for thorn IDWeakField
 
 # Source files in this directory
-SRCS = 
+SRCS = weak_field.cpp
 
 # Subdirectories containing source files
-SUBDIRS = 
+SUBDIRS =
