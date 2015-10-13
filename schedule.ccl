@@ -1,1 +1,13 @@
 # Schedule definitions for thorn IDWeakField
+
+if (CCTK_EQUALS (initial_data,    "weak_field") ||
+    CCTK_EQUALS (initial_lapse,   "weak_field") ||
+    CCTK_EQUALS (initial_hydro,   "bubble") ||
+    CCTK_EQUALS (initial_hydro,   "rt") ||
+    CCTK_EQUALS (initial_hydro,   "kh"))
+{
+  SCHEDULE IDWeakField_initialise IN HydroBase_Initial
+  {
+    LANG: C
+  } "Set up weak field initial data"
+}
