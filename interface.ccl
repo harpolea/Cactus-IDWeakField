@@ -1,3 +1,12 @@
 # Interface definition for thorn IDWeakField
 implements: IDWeakField
 inherits: ADMBase, HydroBase, StaticConformal
+
+public:
+
+CCTK_REAL particles TYPE=ARRAY DIM=1 TIMELEVELS=3 SIZE=number_of_particles GHOSTSIZE=0 DISTRIB=DEFAULT
+{
+  particle_x
+  particle_y
+  particle_z
+} "Coordinates of particles to be tracked"
