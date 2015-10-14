@@ -28,25 +28,25 @@ class Weak_Field {
         int np;
 
         /// 1-D array storing the values of coordinate x of the {\tt np} grid points [unit: km]
-	    double* xx;
+        double* xx;
 
-	    /// 1-D array storing the values of coordinate y of the {\tt np} grid points [unit: km]
-	    double* yy;
+        /// 1-D array storing the values of coordinate y of the {\tt np} grid points [unit: km]
+        double* yy;
 
-    	/// 1-D array storing the values of coordinate z of the {\tt np} grid points [unit: km]
-    	double* zz;
+        /// 1-D array storing the values of coordinate z of the {\tt np} grid points [unit: km]
+        double* zz;
 
-    	/// Lapse function $N$ at the {\tt np} grid points (1-D array)
-    	double* nnn;
+        /// Lapse function $N$ at the {\tt np} grid points (1-D array)
+        double* nnn;
 
         /// Metric coefficient $\gamma_{xx}$ at the grid points (1-D array)
-	    double* g_xx ;
+        double* g_xx;
 
-    	/// Metric coefficient $\gamma_{yy}$ at the grid points (1-D array)
-    	double* g_yy ;
+        /// Metric coefficient $\gamma_{yy}$ at the grid points (1-D array)
+        double* g_yy;
 
     	/// Metric coefficient $\gamma_{zz}$ at the grid points (1-D array)
-    	double* g_zz ;
+    	double* g_zz;
 
     	// Hydro components
         //----------------------
@@ -54,25 +54,25 @@ class Weak_Field {
         /** Baryon density in the fluid frame at the {\tt np} grid points (1-D array)
         * [unit: ${\rm kg \, m}^{-3}$]
         */
-        double* nbar ;
+        double* nbar;
 
     	/// Specific internal energy at the  {\tt np} grid points (1-D array) [unit: $c^2$]
-    	double* ener_spec ;
+    	double* ener_spec;
 
     	/** Component $U^x$ of the fluid 3-velocity with respect to the Eulerian
         * observer, at the {\tt np} grid points (1-D array) [unit: $c$]
         */
-        double* u_euler_x ;
+        double* u_euler_x;
 
     	/** Component $U^y$ of the fluid 3-velocity with respect to the Eulerian
         * observer, at the {\tt np} grid points (1-D array) [unit: $c$]
         */
-        double* u_euler_y ;
+        double* u_euler_y;
 
         /** Component $U^z$ of the fluid 3-velocity with respect to the Eulerian
         * observer, at the {\tt np} grid points (1-D array) [unit: $c$]
         */
-        double* u_euler_z ;
+        double* u_euler_z;
 
         // Constructors - Destructor
         // -------------------------
@@ -101,15 +101,15 @@ class Weak_Field {
         /** Constructor from a binary file
         *   (previously created by {\tt save\_bin})
         */
-        Weak_Field(FILE* ) ;
+        Weak_Field(FILE* );
 
         /** Constructor from a formatted file
         *   (previously created by {\tt save\_form})
         */
-        Weak_Field(ifstream& ) ;
+        Weak_Field(ifstream& );
 
         /// Destructor
-        ~Weak_Field() ;
+        ~Weak_Field();
 
         // Outputs
         //--------
@@ -118,13 +118,13 @@ class Weak_Field {
         *  This file can be subsenquently read by the evolution code,
         *  or by the constructor {\tt Bin\_NS::Bin\_NS(FILE* )}.
         */
-        void save_bin(FILE* ) const ;
+        void save_bin(FILE* ) const;
 
         /** Save in a formatted file.
         *  This file can be subsenquently read by the evolution code,
         *  or by the constructor {\tt Bin\_NS::Bin\_NS(ifstream\& )}.
         */
-        void save_form(ofstream& ) const ;
+        void save_form(ofstream& ) const;
 
         /// Display
         friend ostream& operator<<(ostream& , const Weak_Field& );
@@ -134,7 +134,7 @@ class Weak_Field {
         // Memory management
         //------------------
         /// Allocate the memory for the arrays g\_ij, k\_ij, etc...
-        void alloc_memory() ;
+        void alloc_memory();
 
 };
 

@@ -2,11 +2,12 @@
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
+#include <vector>
 
-#include <cctk.h>
-#include <cctk_Arguments.h>
-#include <cctk_Parameters.h>
-#include <cctk_Functions.h>
+//#include <cctk.h>
+//#include <cctk_Arguments.h>
+//#include <cctk_Parameters.h>
+//#include <cctk_Functions.h>
 
 #include "weak_field.h"
 
@@ -26,7 +27,6 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
 
     // Defined constants
     CCTK_REAL const c_light = 299792458.0; // speed of light [m/s]
-    CCTK_REAL const eps0    = 1 / (mu0 * pow(c_light,2));
 
     // Constants of nature (IAU, CODATA):
     CCTK_REAL const G_grav = 6.67428e-11; // gravitational constant [m^3/kg/s^2]
@@ -52,9 +52,9 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
 
 #pragma omp parallel for
     for (int i=0; i<npoints; ++i) {
-    xx[i] = x[i] * coord_unit;
-    yy[i] = y[i] * coord_unit;
-    zz[i] = z[i] * coord_unit;
+        xx[i] = x[i] * coord_unit;
+        yy[i] = y[i] * coord_unit;
+        zz[i] = z[i] * coord_unit;
     }
 
     CCTK_VInfo (CCTK_THORNSTRING, "Reading from file \"%s\"", filename);
@@ -63,20 +63,35 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
     Weak_Field weak_ns (npoints, &xx[0], &yy[0], &zz[0], filename);
 
     CCTK_VInfo (CCTK_THORNSTRING, "mass [M_sun]:       %g", weak_ns.mass);
-    CCTK_VInfo (CCTK_THORNSTRING, "radius [km]:        %g",
+    CCTK_VInfo (CCTK_THORNSTRING, "radius [km]:        %g", weak_ns.radius);
 
-    assert (bin_ns.np == npoints);
+    assert (weak_ns.np == npoints);
 
     CCTK_INFO ("Filling in Cactus grid points");
 
 #pragma omp parallel for
     for (int i=0; i<npoints; ++i) {
 
-      alp[i] = mag_ns.nnn[i];
+      alp[i] = weak_ns.nnn[i];
+
+      betax[i] = 0.0;
+      betay[i] = 0.0;
+      betaz[i] = 0.0;
 
       gxx[i] = weak_ns.g_xx[i];
       gyy[i] = weak_ns.g_yy[i];
       gzz[i] = weak_ns.g_zz[i];
+
+      gxy[i] = 0.0;
+      gxz[i] = 0.0;
+      gyz[i] = 0.0;
+
+      kxx[i] = 0.0;
+      kxy[i] = 0.0;
+      kxz[i] = 0.0;
+      kyy[i] = 0.0;
+      kyz[i] = 0.0;
+      kzz[i] = 0.0;
 
       rho[i] = weak_ns.nbar[i] / rho_unit;
 
@@ -97,35 +112,6 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
       }
 
     } // for i
-
-    CCTK_INFO ("Setting time derivatives of lapse and shift");
-    {
-      // These initial data assume stationarity
-
-      if (CCTK_EQUALS (initial_dtlapse, "IDWeak_Field")) {
- #pragma omp parallel for
-        for (int i=0; i<npoints; ++i) {
-          dtalp[i] = 0.0;
-        }
-      } else if (CCTK_EQUALS (initial_dtlapse, "none")) {
-        // do nothing
-      } else {
-        CCTK_WARN (CCTK_WARN_ABORT, "internal error");
-      }
-
-      if (CCTK_EQUALS (initial_dtshift, "IDWeak_Field")) {
- #pragma omp parallel for
-        for (int i=0; i<npoints; ++i) {
-          dtbetax[i] = 0.0;
-          dtbetay[i] = 0.0;
-          dtbetaz[i] = 0.0;
-        }
-      } else if (CCTK_EQUALS (initial_dtshift, "none")) {
-        // do nothing
-      } else {
-        CCTK_WARN (CCTK_WARN_ABORT, "internal error");
-      }
-    }
 
 
     CCTK_INFO ("Done.");

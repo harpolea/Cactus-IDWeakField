@@ -9,7 +9,7 @@ EXTENDS KEYWORD initial_hydro ""
   "kh" :: "Kelvin-Helmholtz instability"
 }
 
-shares:admbase
+shares:ADMBase
 
 EXTENDS KEYWORD initial_data
 {
@@ -20,6 +20,7 @@ EXTENDS KEYWORD initial_lapse
 {
   "weak_field" :: "Weak field initial lapse"
 }
+
 
 USES KEYWORD metric_type
 
@@ -34,3 +35,10 @@ USES real rho_rel_min
 USES REAL initial_rho_abs_min
 USES REAL initial_rho_rel_min
 USES REAL initial_atmosphere_factor
+
+PRIVATE:
+
+STRING filename "Input file name"
+{
+  "" :: ""
+} ""
