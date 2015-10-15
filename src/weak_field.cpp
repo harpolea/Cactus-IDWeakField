@@ -3,17 +3,129 @@
 #include <math.h>
 #include <assert.h>
 #include <vector>
+#include <iostream>
+#include <fstream>
 
-//#include <cctk.h>
-//#include <cctk_Arguments.h>
-//#include <cctk_Parameters.h>
-//#include <cctk_Functions.h>
+#include <cctk.h>
+#include <cctk_Arguments.h>
+#include <cctk_Parameters.h>
+#include <cctk_Functions.h>
+
+// if changed the config:
+// make sim-config options=simfactory/mdb/optionlists/ubuntu.cfg
+// otherwise:
+// make sim
+// mpirun -np 4 exe/cactus_sim arrangements/EinsteinInitialData/IDWeakField/par/weak_field.par
 
 #include "weak_field.h"
 
 using namespace std;
 
 // Stolen from EinsteinInitialData/Meudon_Bin_NS/src/Bin_NS.cc
+
+/** Constructor
+*
+* This constructor takes general arrays {\tt xi, yi, zi}
+* for the location of the Cartesian coordinates
+* $(x, y, z)$, i.e. it does not assume that the grid is a uniform one.
+* These arrays are 1-D to deal with any ordering of a 3-D storage.
+*
+*  @param nbpoints [input] Total number of grid points
+*  @param xi [input] 1-D array (size {\tt nbpoints}) storing the
+*		values of coordinate x of the grid points [unit: km]
+*  @param yi [input] 1-D array (size {\tt nbpoints}) storing the
+*		values of coordinate y of the grid points [unit: km]
+*  @param zi [input] 1-D array (size {\tt nbpoints}) storing the
+*		values of coordinate z of the grid points [unit: km]
+*  @param filename [input] Name of the (binary) file containing the result
+*		of a computation by means of the multi-domain
+*		spectral method.
+*/
+Weak_Field::Weak_Field(int nbpoints, const double *xi, const double *yi, const double *zi, const char *filename)
+{
+    np = nbpoints;
+    xx = new double[np];
+    yy = new double[np];
+    zz = new double[np];
+
+    for (int i = 0; i < np; i++) {
+        xx[i] = xi[i];
+        yy[i] = yi[i];
+        zz[i] = zi[i];
+    }
+    // extract data from file and initialise the other stuff
+    //open file
+    ifstream inFile(filename);
+
+    if (!inFile)
+    {
+        cerr << "Weak field inputs file could not be opened" << endl;
+        exit(1);
+    }
+
+    mass = 1.0;
+    radius = 10.0;
+
+    // metric stuff
+    nnn = new double[np];
+    g_xx = new double[np];
+    g_yy = new double[np];
+    g_zz = new double[np];
+
+    // hydro stuff
+    nbar = new double[np];
+    ener_spec = new double[np];
+    u_euler_x = new double[np];
+    u_euler_y = new double[np];
+    u_euler_z = new double[np];
+
+    inFile.close();
+}
+
+// Constructor from a binary file
+Weak_Field::Weak_Field(FILE *file)
+{
+    return;
+}
+
+// Constructor from a formatted file
+Weak_Field::Weak_Field(ifstream &ifs)
+{
+    return;
+}
+
+// Destructor
+Weak_Field::~Weak_Field()
+{
+    delete [] xx;
+    delete [] yy;
+    delete [] zz;
+    delete [] nnn;
+    delete [] g_xx;
+    delete [] g_yy;
+    delete [] g_zz;
+    delete [] nbar;
+    delete [] ener_spec;
+    delete [] u_euler_x;
+    delete [] u_euler_y;
+    delete [] u_euler_z;
+}
+
+void Weak_Field::save_bin(FILE *file) const
+{
+    return;
+}
+
+void Weak_Field::save_form(ofstream &ofs) const
+{
+    return;
+}
+
+ostream &operator<<(ostream &output, const Weak_Field &weak_field)
+{
+    return output;
+}
+
 
 extern "C"
 void IDWeakField_initialise (CCTK_ARGUMENTS)
@@ -60,27 +172,23 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
     CCTK_VInfo (CCTK_THORNSTRING, "Reading from file \"%s\"", filename);
 
     try {
-    Weak_Field weak_ns (npoints, &xx[0], &yy[0], &zz[0], filename);
+    Weak_Field weak_field (npoints, &xx[0], &yy[0], &zz[0], filename);
 
-    CCTK_VInfo (CCTK_THORNSTRING, "mass [M_sun]:       %g", weak_ns.mass);
-    CCTK_VInfo (CCTK_THORNSTRING, "radius [km]:        %g", weak_ns.radius);
+    CCTK_VInfo (CCTK_THORNSTRING, "mass [M_sun]:       %g", weak_field.mass);
+    CCTK_VInfo (CCTK_THORNSTRING, "radius [km]:        %g", weak_field.radius);
 
-    assert (weak_ns.np == npoints);
+    assert (weak_field.np == npoints);
 
     CCTK_INFO ("Filling in Cactus grid points");
 
 #pragma omp parallel for
     for (int i=0; i<npoints; ++i) {
 
-      alp[i] = weak_ns.nnn[i];
+      alp[i] = weak_field.nnn[i];
 
-      betax[i] = 0.0;
-      betay[i] = 0.0;
-      betaz[i] = 0.0;
-
-      gxx[i] = weak_ns.g_xx[i];
-      gyy[i] = weak_ns.g_yy[i];
-      gzz[i] = weak_ns.g_zz[i];
+      gxx[i] = weak_field.g_xx[i];
+      gyy[i] = weak_field.g_yy[i];
+      gzz[i] = weak_field.g_zz[i];
 
       gxy[i] = 0.0;
       gxz[i] = 0.0;
@@ -93,13 +201,13 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
       kyz[i] = 0.0;
       kzz[i] = 0.0;
 
-      rho[i] = weak_ns.nbar[i] / rho_unit;
+      rho[i] = weak_field.nbar[i] / rho_unit;
 
-      eps[i] = rho[i] * weak_ns.ener_spec[i] / ener_unit;
+      eps[i] = rho[i] * weak_field.ener_spec[i] / ener_unit;
 
-      vel[i          ] = weak_ns.u_euler_x[i] / vel_unit;
-      vel[i+  npoints] = weak_ns.u_euler_y[i] / vel_unit;
-      vel[i+2*npoints] = weak_ns.u_euler_z[i] / vel_unit;
+      vel[i          ] = weak_field.u_euler_x[i] / vel_unit;
+      vel[i+  npoints] = weak_field.u_euler_y[i] / vel_unit;
+      vel[i+2*npoints] = weak_field.u_euler_z[i] / vel_unit;
 
       // Especially the velocity is set to strange values outside of the
       // matter region, so take care of this in the following way

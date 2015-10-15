@@ -2,6 +2,7 @@
 
 ActiveThorns = "pugh pughreduce pughslab LocalReduce"
 
+cactus::cctk_run_title = "Weak field"
 cactus::cctk_itlast 			= 	5000
 
 driver::ghost_size			=	2
@@ -44,6 +45,8 @@ TmunuBase::stress_energy_at_RHS		=	yes
 TmunuBase::timelevels			=	1
 TmunuBase::prolongation_type		=	none
 
+ActiveThorns = "IDWeakField"
+
 ADMBase::evolution_method		=	"none"
 ADMBase::initial_data           =   "weak_field"
 ADMBase::initial_lapse          =   "weak_field"
@@ -52,12 +55,15 @@ ADMBase::metric_type			= 	"physical"
 
 SpaceMask::use_mask = "yes"
 
+IDWeakField::filename = "arrangements/EinsteinInitialData/IDWeakField/par/weak_field.d"
+
 ActiveThorns = "eos_omni"
 
 ActiveThorns = "hydrobase GRHydro"
 
 hydrobase::timelevels			= 2
 hydrobase::evolution_method       = "GRHydro"
+hydrobase::initial_hydro        = "rt"
 
 GRHydro::riemann_solver			=	"Roe"
 GRHydro::GRHydro_eos_type			=	"General"
