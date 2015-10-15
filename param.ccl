@@ -42,3 +42,13 @@ STRING filename "Input file name"
 {
   "" :: ""
 } ""
+
+REAL kh_u1 "Kelvin-Helmholtz u1 in km/s"
+{
+    : :: ""
+} 1.0
+
+REAL kh_u2 "Kelvin-Helmholtz u2 in km/s"
+{
+    : :: ""
+} -1.0

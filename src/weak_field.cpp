@@ -55,13 +55,12 @@ Weak_Field::Weak_Field(int nbpoints, const double *xi, const double *yi, const d
     }
     // extract data from file and initialise the other stuff
     //open file
-    ifstream inFile(filename);
+    //ifstream inFile(filename);
 
-    if (!inFile)
-    {
-        cerr << "Weak field inputs file could not be opened" << endl;
-        exit(1);
-    }
+    //if (!inFile)
+    //{
+    //    CCTK_WARN (CCTK_WARN_ABORT, "Weak field inputs file could not be opened");
+    //}
 
     mass = 1.0;
     radius = 10.0;
@@ -79,7 +78,7 @@ Weak_Field::Weak_Field(int nbpoints, const double *xi, const double *yi, const d
     u_euler_y = new double[np];
     u_euler_z = new double[np];
 
-    inFile.close();
+    //inFile.close();
 }
 
 // Constructor from a binary file
@@ -177,6 +176,9 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
     CCTK_VInfo (CCTK_THORNSTRING, "mass [M_sun]:       %g", weak_field.mass);
     CCTK_VInfo (CCTK_THORNSTRING, "radius [km]:        %g", weak_field.radius);
 
+    double mass = weak_field.mass / cactusM;
+    double radius = weak_field.radius / coord_unit;
+
     assert (weak_field.np == npoints);
 
     CCTK_INFO ("Filling in Cactus grid points");
@@ -184,11 +186,13 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
 #pragma omp parallel for
     for (int i=0; i<npoints; ++i) {
 
-      alp[i] = weak_field.nnn[i];
+      double rr = radius + sqrt(xx[i]*xx[i] + yy[i]*yy[i] + zz[i]*zz[i]);
 
-      gxx[i] = weak_field.g_xx[i];
-      gyy[i] = weak_field.g_yy[i];
-      gzz[i] = weak_field.g_zz[i];
+      alp[i] = sqrt(1.0 - 2.0 * mass / rr);
+
+      gxx[i] = sqrt(1.0 + 2.0 * mass / rr);
+      gyy[i] = sqrt(1.0 + 2.0 * mass / rr);
+      gzz[i] = sqrt(1.0 + 2.0 * mass / rr);
 
       gxy[i] = 0.0;
       gxz[i] = 0.0;
@@ -201,13 +205,40 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
       kyz[i] = 0.0;
       kzz[i] = 0.0;
 
-      rho[i] = weak_field.nbar[i] / rho_unit;
 
-      eps[i] = rho[i] * weak_field.ener_spec[i] / ener_unit;
+      if (CCTK_EQUALS (initial_hydro, "bubble")) {
 
-      vel[i          ] = weak_field.u_euler_x[i] / vel_unit;
-      vel[i+  npoints] = weak_field.u_euler_y[i] / vel_unit;
-      vel[i+2*npoints] = weak_field.u_euler_z[i] / vel_unit;
+          rho[i] = weak_field.nbar[i] / rho_unit;
+
+          eps[i] = rho[i] * weak_field.ener_spec[i] / ener_unit;
+
+          vel[i          ] = 0.0;
+          vel[i+  npoints] = 0.0;
+          vel[i+2*npoints] = 0.0;
+
+      } else if (CCTK_EQUALS (initial_hydro, "kh")) {
+
+          rho[i] = weak_field.nbar[i] / rho_unit;
+
+          eps[i] = rho[i] * weak_field.ener_spec[i] / ener_unit;
+          // check to see if above middle of domain
+          vel[i          ] = kh_u1 / vel_unit;
+          vel[i+  npoints] = 0.0;
+          vel[i+2*npoints] = 0.0;
+
+      } else if (CCTK_EQUALS (initial_hydro, "rt")) {
+
+          rho[i] = weak_field.nbar[i] / rho_unit;
+
+          eps[i] = rho[i] * weak_field.ener_spec[i] / ener_unit;
+
+          vel[i          ] = 0.0;
+          vel[i+  npoints] = 0.0;
+          vel[i+2*npoints] = 0.0;
+
+      } else {
+          CCTK_WARN (CCTK_WARN_ABORT, "incorrect initial_hydro");
+      }
 
       // Especially the velocity is set to strange values outside of the
       // matter region, so take care of this in the following way

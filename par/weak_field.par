@@ -23,6 +23,7 @@ ActiveThorns = "time"
 time::dtfac 				= 	0.25
 
 ActiveThorns = "ioutil ioascii iobasic"
+ActiveThorns = "hydrobase GRHydro"
 
 IO::out_fileinfo			=	"none"
 IO::out_dir 				= 	$parfile
@@ -31,14 +32,14 @@ IOBasic::outInfo_every 			= 	1
 IOBasic::outInfo_vars 			= 	"HydroBase::rho"
 
 IOASCII::out1D_every 			= 	1
-IOASCII::out1D_vars 			= 	"GRHydro::w_lorentz hydrobase::rho hydrobase::press hydrobase::eps HydroBase::vel GRHydro::dens GRHydro::tau GRHydro::scon"
+IOASCII::out1D_vars 			= 	"hydrobase::w_lorentz hydrobase::rho hydrobase::press hydrobase::eps HydroBase::vel GRHydro::dens GRHydro::tau GRHydro::scon"
 
 ActiveThorns = "nanchecker mol"
 
 methodoflines::ode_method 		= 	"rk2"
 methodoflines::mol_intermediate_steps	=	2
 
-ActiveThorns = "ADMBase StaticConformal CoordGauge ADMCoupling Tmunubase SpaceMask"
+ActiveThorns = "ADMBase StaticConformal CoordGauge ADMCoupling Tmunubase SpaceMask ADMMacros"
 
 TmunuBase::stress_energy_storage	=	yes
 TmunuBase::stress_energy_at_RHS		=	yes
@@ -50,16 +51,12 @@ ActiveThorns = "IDWeakField"
 ADMBase::evolution_method		=	"none"
 ADMBase::initial_data           =   "weak_field"
 ADMBase::initial_lapse          =   "weak_field"
-ADMBase::initial_shift			=	"none"
+ADMBase::initial_shift			=	"zero"
 ADMBase::metric_type			= 	"physical"
 
 SpaceMask::use_mask = "yes"
 
-IDWeakField::filename = "arrangements/EinsteinInitialData/IDWeakField/par/weak_field.d"
-
 ActiveThorns = "eos_omni"
-
-ActiveThorns = "hydrobase GRHydro"
 
 hydrobase::timelevels			= 2
 hydrobase::evolution_method       = "GRHydro"
