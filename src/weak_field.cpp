@@ -21,110 +21,6 @@
 
 using namespace std;
 
-// Stolen from EinsteinInitialData/Meudon_Bin_NS/src/Bin_NS.cc
-
-/** Constructor
-*
-* This constructor takes general arrays {\tt xi, yi, zi}
-* for the location of the Cartesian coordinates
-* $(x, y, z)$, i.e. it does not assume that the grid is a uniform one.
-* These arrays are 1-D to deal with any ordering of a 3-D storage.
-*
-*  @param nbpoints [input] Total number of grid points
-*  @param xi [input] 1-D array (size {\tt nbpoints}) storing the
-*		values of coordinate x of the grid points [unit: km]
-*  @param yi [input] 1-D array (size {\tt nbpoints}) storing the
-*		values of coordinate y of the grid points [unit: km]
-*  @param zi [input] 1-D array (size {\tt nbpoints}) storing the
-*		values of coordinate z of the grid points [unit: km]
-*  @param filename [input] Name of the (binary) file containing the result
-*		of a computation by means of the multi-domain
-*		spectral method.
-*/
-Weak_Field::Weak_Field(int nbpoints, const double *xi, const double *yi, const double *zi, const char *filename)
-{
-    np = nbpoints;
-    xx = new double[np];
-    yy = new double[np];
-    zz = new double[np];
-
-    for (int i = 0; i < np; i++) {
-        xx[i] = xi[i];
-        yy[i] = yi[i];
-        zz[i] = zi[i];
-    }
-    // extract data from file and initialise the other stuff
-    //open file
-    //ifstream inFile(filename);
-
-    //if (!inFile)
-    //{
-    //    CCTK_WARN (CCTK_WARN_ABORT, "Weak field inputs file could not be opened");
-    //}
-
-    mass = 1.0;
-    radius = 10.0;
-
-    // metric stuff
-    nnn = new double[np];
-    g_xx = new double[np];
-    g_yy = new double[np];
-    g_zz = new double[np];
-
-    // hydro stuff
-    nbar = new double[np];
-    ener_spec = new double[np];
-    u_euler_x = new double[np];
-    u_euler_y = new double[np];
-    u_euler_z = new double[np];
-
-    //inFile.close();
-}
-
-// Constructor from a binary file
-Weak_Field::Weak_Field(FILE *file)
-{
-    return;
-}
-
-// Constructor from a formatted file
-Weak_Field::Weak_Field(ifstream &ifs)
-{
-    return;
-}
-
-// Destructor
-Weak_Field::~Weak_Field()
-{
-    delete [] xx;
-    delete [] yy;
-    delete [] zz;
-    delete [] nnn;
-    delete [] g_xx;
-    delete [] g_yy;
-    delete [] g_zz;
-    delete [] nbar;
-    delete [] ener_spec;
-    delete [] u_euler_x;
-    delete [] u_euler_y;
-    delete [] u_euler_z;
-}
-
-void Weak_Field::save_bin(FILE *file) const
-{
-    return;
-}
-
-void Weak_Field::save_form(ofstream &ofs) const
-{
-    return;
-}
-
-ostream &operator<<(ostream &output, const Weak_Field &weak_field)
-{
-    return output;
-}
-
 
 extern "C"
 void IDWeakField_initialise (CCTK_ARGUMENTS)
@@ -168,25 +64,27 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
         zz[i] = z[i] * coord_unit;
     }
 
-    CCTK_VInfo (CCTK_THORNSTRING, "Reading from file \"%s\"", filename);
+    // I hope that the coordinates have been ordered logically
+    double xmin, xmax, zmin, zmax;
+    xmin = xx[0];
+    xmax = xx[npoints-1];
+    zmin = zz[0];
+    zmax = zz[npoints-1];
 
     try {
-    Weak_Field weak_field (npoints, &xx[0], &yy[0], &zz[0], filename);
+    CCTK_VInfo (CCTK_THORNSTRING, "mass [M_sun]:       %g", mass);
+    CCTK_VInfo (CCTK_THORNSTRING, "radius [km]:        %g", radius);
 
-    CCTK_VInfo (CCTK_THORNSTRING, "mass [M_sun]:       %g", weak_field.mass);
-    CCTK_VInfo (CCTK_THORNSTRING, "radius [km]:        %g", weak_field.radius);
-
-    double mass = weak_field.mass / cactusM;
-    double radius = weak_field.radius / coord_unit;
-
-    assert (weak_field.np == npoints);
+    double RR = radius / coord_unit;
+    double zcntr = 0.5 * (zmax + zmin);
+    double z_smooth = 0.04 * (zmax - zmin);
 
     CCTK_INFO ("Filling in Cactus grid points");
 
 #pragma omp parallel for
     for (int i=0; i<npoints; ++i) {
 
-      double rr = radius + sqrt(xx[i]*xx[i] + yy[i]*yy[i] + zz[i]*zz[i]);
+      double rr = RR + sqrt(xx[i]*xx[i] + yy[i]*yy[i] + zz[i]*zz[i]);
 
       alp[i] = sqrt(1.0 - 2.0 * mass / rr);
 
@@ -205,47 +103,69 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
       kyz[i] = 0.0;
       kzz[i] = 0.0;
 
+      double g = G_grav * mass / rr;
+
+      // y velocity zero everywhere
+      vel[i+  npoints] = 0.0;
 
       if (CCTK_EQUALS (initial_hydro, "bubble")) {
 
-          rho[i] = weak_field.nbar[i] / rho_unit;
+          rho[i] = rho0 * exp(-g * yy[i] / (eos_gamma * RR * alp[i]*alp[i]));
 
-          eps[i] = rho[i] * weak_field.ener_spec[i] / ener_unit;
+          eps[i] = pow(rho[i], eos_gamma - 1.0) / (eos_gamma - 1.0);
 
+          double r_coord = sqrt(pow(xx[i]-bubble_x_pert,2) + pow(zz[i]-bubble_z_pert,2));
+
+          if (r_coord <= bubble_r_pert)
+          {
+              eps[i] += eps[i] * (bubble_amp - 1.0) * 0.5 * (1.0 + tanh((2.0 - r_coord/(0.9 * bubble_r_pert))));
+              rho[i] = pow(rho[i], eos_gamma) / (eps[i] * (eos_gamma - 1.0));
+          }
+
+          // velocity zero everywhere
           vel[i          ] = 0.0;
-          vel[i+  npoints] = 0.0;
           vel[i+2*npoints] = 0.0;
 
       } else if (CCTK_EQUALS (initial_hydro, "kh")) {
 
-          rho[i] = weak_field.nbar[i] / rho_unit;
+          if (zz[i] < zcntr) {
+              rho[i] = (rho1 - (rho2-rho1) * exp((zz[i]-zcntr)/(0.025*(xmax-xmin))))/ rho_unit;
 
-          eps[i] = rho[i] * weak_field.ener_spec[i] / ener_unit;
-          // check to see if above middle of domain
-          vel[i          ] = kh_u1 / vel_unit;
-          vel[i+  npoints] = 0.0;
-          vel[i+2*npoints] = 0.0;
+              // u
+              vel[i] = (kh_u1 - (kh_u2-kh_u1) * exp((zz[i]-zcntr)/(0.025*(xmax-xmin))))/ rho_unit;
+
+          } else {
+              rho[i] = (rho2 + (rho2-rho1) * exp((-zz[i]+zcntr)/(0.025*(xmax-xmin))))/ rho_unit;
+
+              // u
+              vel[i] = (kh_u2 + (kh_u2-kh_u1) * exp((-zz[i]+zcntr)/(0.025*(xmax-xmin))))/ rho_unit;
+          }
+
+          // v
+          vel[i+2*npoints] = 0.5 * kh_u1 * sin(4.0 * M_PI * (xx[i] + 0.5 * (xmax-xmin))/(xmax-xmin))/ vel_unit;
+
+          eps[i] = pow(rho[i], eos_gamma - 1.0) / (eos_gamma - 1.0);
 
       } else if (CCTK_EQUALS (initial_hydro, "rt")) {
 
-          rho[i] = weak_field.nbar[i] / rho_unit;
+          rho[i] = rho1 + (rho2 - rho1) * 0.5 * (1.0 + tanh((zz[i]-zcntr) / 0.9 * z_smooth));
 
-          eps[i] = rho[i] * weak_field.ener_spec[i] / ener_unit;
+          rho[i] *= exp(-g * yy[i] / (eos_gamma * RR * alp[i]*alp[i]));
 
           vel[i          ] = 0.0;
-          vel[i+  npoints] = 0.0;
-          vel[i+2*npoints] = 0.0;
+          vel[i+2*npoints] = rt_amp * cos(2.0 * M_PI * xx[i] / (xmax-xmin)) * exp(-(zz[i]-zcntr)*(zz[i]-zcntr)/(rt_sigma*rt_sigma));
+
+          eps[i] = pow(rho[i], eos_gamma - 1.0) / (eos_gamma - 1.0);
 
       } else {
           CCTK_WARN (CCTK_WARN_ABORT, "incorrect initial_hydro");
       }
 
-      // Especially the velocity is set to strange values outside of the
-      // matter region, so take care of this in the following way
+
+      // Check density not too small
       if (rho[i] < 1.e-20) {
         rho[i          ] = 1.e-20;
         vel[i          ] = 0.0;
-        vel[i+  npoints] = 0.0;
         vel[i+2*npoints] = 0.0;
         eps[i          ] = 0.0;
       }

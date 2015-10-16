@@ -45,10 +45,70 @@ STRING filename "Input file name"
 
 REAL kh_u1 "Kelvin-Helmholtz u1 in km/s"
 {
-    : :: ""
+    : :: "real"
 } 1.0
 
 REAL kh_u2 "Kelvin-Helmholtz u2 in km/s"
 {
-    : :: ""
+    : :: "real"
 } -1.0
+
+REAL mass "mass of neutron star in M_sun"
+{
+    0.0: :: "real"
+} 1.0
+
+REAL radius "radius of neutron star in km"
+{
+    0.0: :: "real"
+} 10.0
+
+REAL rho0 "base density of ocean in kg/m^3"
+{
+    0.0: :: "real"
+} 10000.0
+
+REAL rho1 "density of lower half of ocean in kg/m^3"
+{
+    0.0: :: "real"
+} 10000.0
+
+REAL rho2 "density of upper half of ocean in kg/m^3"
+{
+    0.0: :: "real"
+} 10000.0
+
+REAL eos_gamma "ratio of specific heats"
+{
+    0.0: :: "real"
+} 1.666666666666667
+
+REAL bubble_x_pert "position in the x-direction of the bubble in km"
+{
+    : :: "real"
+} 0.5
+
+REAL bubble_z_pert "position in the y-direction of the bubble in km"
+{
+    : :: "real"
+} 0.5
+
+REAL bubble_r_pert "radius of the bubble in km"
+{
+    : :: "real"
+} 0.5
+
+REAL bubble_amp "amplitude of bubble perturbation"
+{
+    : :: "real"
+} 1.1
+
+REAL rt_amp "amplitude of velocity perturbation"
+{
+    0.0: :: "real"
+} 0.1
+
+REAL rt_sigma "something to do with the Rayleigh-Taylor velocity perturbation"
+{
+    0.0: :: "real"
+} 0.1
