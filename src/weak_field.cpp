@@ -52,6 +52,8 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
     CCTK_REAL const ener_unit  = pow(cactusL,2);           // from c^2
     CCTK_REAL const vel_unit   = cactusL / cactusT / c_light; // from c
 
+// Problem here: vel_unit is identically 1, as it goes c->c.
+
     CCTK_INFO ("Setting up coordinates");
 
     int const npoints = cctk_lsh[0] * cctk_lsh[1] * cctk_lsh[2];
@@ -65,11 +67,25 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
     }
 
     // I hope that the coordinates have been ordered logically
+    CCTK_INT const size = 3;
+    CCTK_REAL physical_min[3];
+    CCTK_REAL physical_max[3];
+    CCTK_REAL interior_min[3];
+    CCTK_REAL interior_max[3];
+    CCTK_REAL exterior_min[3];
+    CCTK_REAL exterior_max[3];
+    CCTK_REAL spacing;
+    GetDomainSpecification
+      (size,
+       physical_min, physical_max,
+       interior_min, interior_max,
+       exterior_min, exterior_max,
+       & spacing);
     double xmin, xmax, zmin, zmax;
-    xmin = xx[0];
-    xmax = xx[npoints-1];
-    zmin = zz[0];
-    zmax = zz[npoints-1];
+    xmin = physical_min[0];
+    xmax = physical_max[0];
+    zmin = physical_min[2];
+    zmax = physical_max[2];
 
     try {
     CCTK_VInfo (CCTK_THORNSTRING, "mass [M_sun]:       %g", mass);
@@ -132,13 +148,13 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
               rho[i] = (rho1 - (rho2-rho1) * exp((zz[i]-zcntr)/(0.025*(xmax-xmin))))/ rho_unit;
 
               // u
-              vel[i] = (kh_u1 - (kh_u2-kh_u1) * exp((zz[i]-zcntr)/(0.025*(xmax-xmin))))/ rho_unit;
+              vel[i] = (kh_u1 - (kh_u2-kh_u1) * exp((zz[i]-zcntr)/(0.025*(xmax-xmin))))/ vel_unit;
 
           } else {
               rho[i] = (rho2 + (rho2-rho1) * exp((-zz[i]+zcntr)/(0.025*(xmax-xmin))))/ rho_unit;
 
               // u
-              vel[i] = (kh_u2 + (kh_u2-kh_u1) * exp((-zz[i]+zcntr)/(0.025*(xmax-xmin))))/ rho_unit;
+              vel[i] = (kh_u2 + (kh_u2-kh_u1) * exp((-zz[i]+zcntr)/(0.025*(xmax-xmin))))/ vel_unit;
           }
 
           // v
