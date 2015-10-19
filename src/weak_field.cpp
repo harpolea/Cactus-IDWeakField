@@ -52,16 +52,43 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
     //CCTK_REAL const ener_unit  = pow(cactusL,2);           // from c^2
     CCTK_REAL const vel_unit   = cactusL / cactusT / c_light; // from c
 
+// Problem here: vel_unit is identically 1, as it goes c->c.
+
     CCTK_INFO ("Setting up coordinates");
 
     int const npoints = cctk_lsh[0] * cctk_lsh[1] * cctk_lsh[2];
+    vector<double> xx(npoints), yy(npoints), zz(npoints);
+
+#pragma omp parallel for
+    for (int i=0; i<npoints; ++i) {
+        xx[i] = x[i];// / cactusL;
+        yy[i] = y[i];// / cactusL;
+        zz[i] = z[i];// / cactusL;
+    }
 
     // I hope that the coordinates have been ordered logically
+    CCTK_INT const size = 3;
+    CCTK_REAL physical_min[3];
+    CCTK_REAL physical_max[3];
+    CCTK_REAL interior_min[3];
+    CCTK_REAL interior_max[3];
+    CCTK_REAL exterior_min[3];
+    CCTK_REAL exterior_max[3];
+    CCTK_REAL spacing;
+    GetDomainSpecification
+      (size,
+       physical_min, physical_max,
+       interior_min, interior_max,
+       exterior_min, exterior_max,
+       & spacing);
     double xmin, xmax, zmin, zmax;
-    xmin = x[0];
-    xmax = x[npoints-1];
-    zmin = z[0];
-    zmax = z[npoints-1];
+
+    xmin = physical_min[0];// / cactusL;
+    xmax = physical_max[0];// / cactusL;
+    zmin = physical_min[2];// / cactusL;
+    zmax = physical_max[2];// / cactusL;
+
+    cout << "\n\n\n" << xmax << "\n\n";
 
     try {
     CCTK_VInfo (CCTK_THORNSTRING, "mass [M_sun]:       %g", mass);
@@ -83,7 +110,7 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
 #pragma omp parallel for
     for (int i=0; i<npoints; ++i) {
 
-      double rr = RR + sqrt(x[i]*x[i] + y[i]*y[i] + z[i]*z[i]);
+      double rr = RR + sqrt(xx[i]*xx[i] + yy[i]*yy[i] + zz[i]*zz[i]);
 
       alp[i] = sqrt(1.0 - 2.0 * mass / rr);
 
@@ -109,11 +136,11 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
 
       if (CCTK_EQUALS (initial_hydro, "bubble")) {
 
-          rho[i] = _rho0 * exp(-g * y[i] / (eos_gamma * RR * alp[i]*alp[i]));
+          rho[i] = _rho0 * exp(-g * zz[i] / (eos_gamma * RR * alp[i]*alp[i]));
 
           eps[i] = pow(rho[i], eos_gamma - 1.0) / (eos_gamma - 1.0);
 
-          double r_coord = sqrt(pow(x[i]-bubble_x_pert*(xmax-xmin),2) + pow(z[i]-bubble_z_pert*(zmax-zmin),2));
+          double r_coord = sqrt(pow(xx[i]-bubble_x_pert*(xmax-xmin),2) + pow(zz[i]-bubble_z_pert*(zmax-zmin),2));
 
           if (r_coord <= bubble_r_pert)
           {
@@ -127,32 +154,34 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
 
       } else if (CCTK_EQUALS (initial_hydro, "kh")) {
 
-          if (z[i] < zcntr) {
-              rho[i] = _rho1 - (_rho2-_rho1) * exp((z[i]-zcntr)/(0.025*(xmax-xmin)));
+          if (zz[i] < zcntr) {
+              rho[i] = _rho1 - (_rho2-_rho1) * exp((zz[i]-zcntr)/(0.025*(xmax-xmin)));
 
               // u
-              vel[i] = _kh_u1 - (_kh_u2-_kh_u1) * exp((z[i]-zcntr)/(0.025*(xmax-xmin)));
+              vel[i] = _kh_u1 - (_kh_u2-_kh_u1) * exp((zz[i]-zcntr)/(0.025*(xmax-xmin)));
+
 
           } else {
-              rho[i] = _rho2 + (_rho2-_rho1) * exp((-z[i]+zcntr)/(0.025*(xmax-xmin)));
+              rho[i] = _rho2 + (_rho2-_rho1) * exp((-zz[i]+zcntr)/(0.025*(xmax-xmin)));
 
               // u
-              vel[i] = _kh_u2 + (_kh_u2-_kh_u1) * exp((-z[i]+zcntr)/(0.025*(xmax-xmin)));
+              vel[i] = _kh_u2 + (_kh_u2-_kh_u1) * exp((-zz[i]+zcntr)/(0.025*(xmax-xmin)));
+
           }
 
           // v
-          vel[i+2*npoints] = 0.5 * _kh_u1 * sin(4.0 * M_PI * (x[i] + 0.5 * (xmax-xmin))/(xmax-xmin));
+          vel[i+2*npoints] = 0.5 * _kh_u1 * sin(4.0 * M_PI * (xx[i] + 0.5 * (xmax-xmin))/(xmax-xmin));
 
           eps[i] = pow(rho[i], eos_gamma - 1.0) / (eos_gamma - 1.0);
 
       } else if (CCTK_EQUALS (initial_hydro, "rt")) {
 
-          rho[i] = _rho1 + (_rho2 - _rho1) * 0.5 * (1.0 + tanh((z[i]-zcntr) / 0.9 * z_smooth));
+          rho[i] = _rho1 + (_rho2 - _rho1) * 0.5 * (1.0 + tanh((zz[i]-zcntr) / 0.9 * z_smooth));
 
-          rho[i] *= exp(-g * y[i] / (eos_gamma * RR * alp[i]*alp[i]));
+          rho[i] *= exp(-g * zz[i] / (eos_gamma * RR * alp[i]*alp[i]));
 
           vel[i          ] = 0.0;
-          vel[i+2*npoints] = rt_amp * cos(2.0 * M_PI * x[i] / (xmax-xmin)) * exp(-(z[i]-zcntr)*(z[i]-zcntr)/(rt_sigma*rt_sigma));
+          vel[i+2*npoints] = rt_amp * cos(2.0 * M_PI * xx[i] / (xmax-xmin)) * exp(-(zz[i]-zcntr)*(zz[i]-zcntr)/(rt_sigma*rt_sigma));
 
           eps[i] = pow(rho[i], eos_gamma - 1.0) / (eos_gamma - 1.0);
 

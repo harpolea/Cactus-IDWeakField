@@ -4,4 +4,15 @@ inherits: ADMBase, HydroBase, StaticConformal
 
 public:
 
-# not sure what to put here 
+# not sure what to put here
+
+CCTK_INT FUNCTION GetDomainSpecification \
+  (CCTK_INT IN size, \
+   CCTK_REAL OUT ARRAY physical_min, \
+   CCTK_REAL OUT ARRAY physical_max, \
+   CCTK_REAL OUT ARRAY interior_min, \
+   CCTK_REAL OUT ARRAY interior_max, \
+   CCTK_REAL OUT ARRAY exterior_min, \
+   CCTK_REAL OUT ARRAY exterior_max, \
+   CCTK_REAL OUT ARRAY spacing)
+REQUIRES FUNCTION GetDomainSpecification
