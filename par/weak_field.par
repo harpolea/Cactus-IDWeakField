@@ -6,17 +6,26 @@ cactus::cctk_run_title = "Weak field"
 cactus::cctk_itlast 			= 	5000
 
 driver::ghost_size			=	2
-driver::global_nx 			= 	15
-driver::global_ny 			= 	15
-driver::global_nz 			= 	15
+driver::global_nx 			= 	20
+driver::global_ny 			= 	20
+driver::global_nz 			= 	20
 
 ActiveThorns = "coordbase symbase cartgrid3d boundary initbase"
 
 InitBase::initial_data_setup_method = "init_all_levels"
 
-grid::type 				= 	"BySpacing"
+grid::type 				= 	"coordbase"
 grid::domain 				= 	"full"
-grid::dxyz 				= 	0.5
+#grid::dxyz 				= 	0.5
+CoordBase::xmin =   0.0
+CoordBase::ymin =   0.0
+CoordBase::zmin =   0.0
+CoordBase::xmax = 0.01
+CoordBase::ymax = 0.01
+CoordBase::zmax = 0.01
+CoordBase::dx   =   0.0005  # dx or ncells_x
+CoordBase::dy   =   0.0005  # dy or ncells_y
+CoordBase::dz   =   0.0005  # dz or ncells_z
 
 ActiveThorns = "time"
 
@@ -60,7 +69,7 @@ ActiveThorns = "eos_omni"
 
 hydrobase::timelevels			= 2
 hydrobase::evolution_method       = "GRHydro"
-hydrobase::initial_hydro        = "rt"
+hydrobase::initial_hydro        = "kh"
 
 GRHydro::riemann_solver			=	"Roe"
 GRHydro::GRHydro_eos_type			=	"General"
@@ -69,3 +78,18 @@ GRHydro::GRHydro_stencil			=	2
 GRHydro::recon_method			=	"tvd"
 GRHydro::tvd_limiter			=	"minmod"
 GRHydro::bound				=	"flat"
+
+IDWeakField::kh_u1  =   100.0
+IDWeakField::kh_u2  =   -100.0
+IDWeakField::mass   =   1.0
+IDWeakField::radius =   10.0
+IDWeakField::rho0   =   100000000.0
+IDWeakField::rho1   =   100000000.0
+IDWeakField::rho2   =   101000000.0
+IDWeakField::eos_gamma = 5.0/3.0
+IDWeakField::bubble_x_pert = 0.005
+IDWeakField::bubble_z_pert = 0.005
+IDWeakField::bubble_r_pert = 0.001
+IDWeakField::bubble_amp    = 1.1
+IDWeakField::rt_amp = 0.1
+IDWeakField::rt_sigma      = 0.1
