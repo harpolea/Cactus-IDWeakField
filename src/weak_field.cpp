@@ -50,7 +50,7 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
     CCTK_REAL const coord_unit = cactusL / 1.0e+3;         // from km
     CCTK_REAL const rho_unit   = cactusM / pow(cactusL,3); // from kg/m^3
     //CCTK_REAL const ener_unit  = pow(cactusL,2);           // from c^2
-    CCTK_REAL const vel_unit   = cactusL / cactusT / c_light; // from c
+    CCTK_REAL const vel_unit   = c_light; // from km/s
 
 // Problem here: vel_unit is identically 1, as it goes c->c.
 
@@ -58,13 +58,6 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
 
     int const npoints = cctk_lsh[0] * cctk_lsh[1] * cctk_lsh[2];
     vector<double> xx(npoints), yy(npoints), zz(npoints);
-
-#pragma omp parallel for
-    for (int i=0; i<npoints; ++i) {
-        xx[i] = x[i];// / cactusL;
-        yy[i] = y[i];// / cactusL;
-        zz[i] = z[i];// / cactusL;
-    }
 
     // I hope that the coordinates have been ordered logically
     CCTK_INT const size = 3;
@@ -107,34 +100,37 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
 
     CCTK_INFO ("Filling in Cactus grid points");
 
-#pragma omp parallel for
-    for (int i=0; i<npoints; ++i) {
+    for (int i=0; i<npoints; i++) {
 
-      double rr = RR + sqrt(xx[i]*xx[i] + yy[i]*yy[i] + zz[i]*zz[i]);
+        xx[i] = x[i];// / cactusL;
+        yy[i] = y[i];// / cactusL;
+        zz[i] = z[i];// / cactusL;
 
-      alp[i] = sqrt(1.0 - 2.0 * mass / rr);
+        double rr = RR + sqrt(xx[i]*xx[i] + yy[i]*yy[i] + zz[i]*zz[i]);
 
-      gxx[i] = sqrt(1.0 + 2.0 * mass / rr);
-      gyy[i] = sqrt(1.0 + 2.0 * mass / rr);
-      gzz[i] = sqrt(1.0 + 2.0 * mass / rr);
+        alp[i] = sqrt(1.0 - 2.0 * mass / rr);
 
-      gxy[i] = 0.0;
-      gxz[i] = 0.0;
-      gyz[i] = 0.0;
+        gxx[i] = sqrt(1.0 + 2.0 * mass / rr);
+        gyy[i] = sqrt(1.0 + 2.0 * mass / rr);
+        gzz[i] = sqrt(1.0 + 2.0 * mass / rr);
 
-      kxx[i] = 0.0;
-      kxy[i] = 0.0;
-      kxz[i] = 0.0;
-      kyy[i] = 0.0;
-      kyz[i] = 0.0;
-      kzz[i] = 0.0;
+        gxy[i] = 0.0;
+        gxz[i] = 0.0;
+        gyz[i] = 0.0;
 
-      double g = mass / rr;
+        kxx[i] = 0.0;
+        kxy[i] = 0.0;
+        kxz[i] = 0.0;
+        kyy[i] = 0.0;
+        kyz[i] = 0.0;
+        kzz[i] = 0.0;
 
-      // y velocity zero everywhere
-      vel[i+  npoints] = 0.0;
+        double g = mass / rr;
 
-      if (CCTK_EQUALS (initial_hydro, "bubble")) {
+        // y velocity zero everywhere
+        vel[i+  npoints] = 0.0;
+
+        if (CCTK_EQUALS (initial_hydro, "bubble")) {
 
           rho[i] = _rho0 * exp(-g * zz[i] / (eos_gamma * RR * alp[i]*alp[i]));
 
@@ -152,7 +148,7 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
           vel[i          ] = 0.0;
           vel[i+2*npoints] = 0.0;
 
-      } else if (CCTK_EQUALS (initial_hydro, "kh")) {
+        } else if (CCTK_EQUALS (initial_hydro, "kh")) {
 
           if (zz[i] < zcntr) {
               rho[i] = _rho1 - (_rho2-_rho1) * exp((zz[i]-zcntr)/(0.025*(xmax-xmin)));
@@ -174,7 +170,7 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
 
           eps[i] = pow(rho[i], eos_gamma - 1.0) / (eos_gamma - 1.0);
 
-      } else if (CCTK_EQUALS (initial_hydro, "rt")) {
+        } else if (CCTK_EQUALS (initial_hydro, "rt")) {
 
           rho[i] = _rho1 + (_rho2 - _rho1) * 0.5 * (1.0 + tanh((zz[i]-zcntr) / 0.9 * z_smooth));
 
@@ -185,17 +181,17 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
 
           eps[i] = pow(rho[i], eos_gamma - 1.0) / (eos_gamma - 1.0);
 
-      } else {
+        } else {
           CCTK_WARN (CCTK_WARN_ABORT, "incorrect initial_hydro");
-      }
+        }
 
-      // Check density not too small
-      if (rho[i] < 1.e-20) {
+        // Check density not too small
+        if (rho[i] < 1.e-20) {
         rho[i          ] = 1.e-20;
         vel[i          ] = 0.0;
         vel[i+2*npoints] = 0.0;
         eps[i          ] = 0.0;
-      }
+        }
 
     } // for i
 
