@@ -20,12 +20,12 @@ grid::domain 				= 	"full"
 CoordBase::xmin =   0.0
 CoordBase::ymin =   0.0
 CoordBase::zmin =   0.0
-CoordBase::xmax = 0.01
-CoordBase::ymax = 0.01
-CoordBase::zmax = 0.01
-CoordBase::dx   =   0.0005  # dx or ncells_x
-CoordBase::dy   =   0.0005  # dy or ncells_y
-CoordBase::dz   =   0.0005  # dz or ncells_z
+CoordBase::xmax = 100.0
+CoordBase::ymax = 100.0
+CoordBase::zmax = 100.0
+CoordBase::dx   =   5.0  # dx or ncells_x
+CoordBase::dy   =   5.0  # dy or ncells_y
+CoordBase::dz   =   5.0  # dz or ncells_z
 
 ActiveThorns = "time"
 
@@ -38,7 +38,7 @@ IO::out_fileinfo			=	"none"
 IO::out_dir 				= 	$parfile
 
 IOBasic::outInfo_every 			= 	1
-IOBasic::outInfo_vars 			= 	"HydroBase::rho"
+IOBasic::outInfo_vars 			= 	"HydroBase::rho HydroBase::vel"
 
 IOASCII::out1D_every 			= 	1
 IOASCII::out1D_vars 			= 	"hydrobase::w_lorentz hydrobase::rho hydrobase::press hydrobase::eps HydroBase::vel GRHydro::dens GRHydro::tau GRHydro::scon"
@@ -79,13 +79,9 @@ GRHydro::recon_method			=	"tvd"
 GRHydro::tvd_limiter			=	"minmod"
 GRHydro::bound				=	"flat"
 
-IDWeakField::kh_u1  =   100.0
-IDWeakField::kh_u2  =   -100.0
-IDWeakField::mass   =   1.0
-IDWeakField::radius =   10.0
-IDWeakField::rho0   =   100000000.0
-IDWeakField::rho1   =   100000000.0
-IDWeakField::rho2   =   101000000.0
+IDWeakField::rho0   =   1.0e5
+IDWeakField::rho1   =   1.0e5
+IDWeakField::rho2   =   1.1e5
 IDWeakField::eos_gamma = 5.0/3.0
 IDWeakField::bubble_x_pert = 0.005
 IDWeakField::bubble_z_pert = 0.005

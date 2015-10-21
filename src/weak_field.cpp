@@ -33,11 +33,11 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
     // From Meudon_Mag_NS
 
     // Defined constants
-    CCTK_REAL const c_light = 299792458.0; // speed of light [m/s]
+    CCTK_REAL const c_light = 29979245800.0; // speed of light [cm/s]
 
     // Constants of nature (IAU, CODATA):
-    CCTK_REAL const G_grav = 6.67428e-11; // gravitational constant [m^3/kg/s^2]
-    CCTK_REAL const M_sun  = 1.98892e+30; // solar mass [kg]
+    CCTK_REAL const G_grav = 6.67428e-8; // gravitational constant [cm^3/g/s^2]
+    CCTK_REAL const M_sun  = 1.98892e+33; // solar mass [g]
 
     // Cactus units in terms of SI units:
     // (These are derived from M = M_sun, c = G = 1, and using 1/M_sun
@@ -47,10 +47,10 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
     CCTK_REAL const cactusT = cactusL / c_light;
 
     // Other quantities in terms of Cactus units
-    CCTK_REAL const coord_unit = cactusL / 1.0e+3;         // from km
-    CCTK_REAL const rho_unit   = cactusM / pow(cactusL,3); // from kg/m^3
+    //CCTK_REAL const coord_unit = cactusL / 1.0e+3;         // from km
+    CCTK_REAL const rho_unit   = cactusM / pow(cactusL,3); // from g/cm^3
     //CCTK_REAL const ener_unit  = pow(cactusL,2);           // from c^2
-    CCTK_REAL const vel_unit   = c_light; // from km/s
+    CCTK_REAL const vel_unit   = c_light; // from cm/s
 
 // Problem here: vel_unit is identically 1, as it goes c->c.
 
@@ -76,18 +76,16 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
        & spacing);
     double xmin, xmax, zmin, zmax;
 
-    xmin = physical_min[0];// / cactusL;
-    xmax = physical_max[0];// / cactusL;
-    zmin = physical_min[2];// / cactusL;
-    zmax = physical_max[2];// / cactusL;
-
-    cout << "\n\n\n" << xmax << "\n\n";
+    xmin = physical_min[0] / cactusL;
+    xmax = physical_max[0] / cactusL;
+    zmin = physical_min[2] / cactusL;
+    zmax = physical_max[2] / cactusL;
 
     try {
     CCTK_VInfo (CCTK_THORNSTRING, "mass [M_sun]:       %g", mass);
-    CCTK_VInfo (CCTK_THORNSTRING, "radius [km]:        %g", radius);
+    CCTK_VInfo (CCTK_THORNSTRING, "radius [cm]:        %g", radius);
 
-    double RR = radius / coord_unit;
+    double RR = radius / cactusL;
     double zcntr = 0.5 * (zmax + zmin);
     double z_smooth = 0.04 * (zmax - zmin);
 
@@ -102,9 +100,9 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
 
     for (int i=0; i<npoints; i++) {
 
-        xx[i] = x[i];// / cactusL;
-        yy[i] = y[i];// / cactusL;
-        zz[i] = z[i];// / cactusL;
+        xx[i] = x[i]/ cactusL;
+        yy[i] = y[i] / cactusL;
+        zz[i] = z[i] / cactusL;
 
         double rr = RR + sqrt(xx[i]*xx[i] + yy[i]*yy[i] + zz[i]*zz[i]);
 

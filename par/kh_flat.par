@@ -21,15 +21,15 @@ CartGrid3D::avoid_origin = "no"
 CoordBase::domainsize       = "minmax"
 CoordBase::spacing          = "gridspacing"
 
-CoordBase::xmin = -1.0
-CoordBase::ymin = -1.0
-CoordBase::zmin = -1.0
-CoordBase::xmax =  1.0
-CoordBase::ymax =  1.0
-CoordBase::zmax =  1.0
-CoordBase::dx   = 0.02
-CoordBase::dy   = 0.5
-CoordBase::dz   = 0.02
+CoordBase::xmin = -1.0e3
+CoordBase::ymin = -1.0e3
+CoordBase::zmin = -1.0e3
+CoordBase::xmax =  1.0e3
+CoordBase::ymax =  1.0e3
+CoordBase::zmax =  1.0e3
+CoordBase::dx   = 0.02e3
+CoordBase::dy   = 0.5e3
+CoordBase::dz   = 0.02e3
 
 CoordBase::boundary_size_x_lower        = 3
 CoordBase::boundary_size_y_lower        = 3
@@ -93,11 +93,11 @@ hydrobase::timelevels			        = 2
 hydrobase::evolution_method       = "GRHydro"
 hydrobase::initial_hydro          = "kh"
 
-IDWeakField::rho0   = 1.e15
-IDWeakField::rho1   = 1.e15
-IDWeakField::rho2   = 1.e15
-IDWeakField::kh_u1  = -1e-3
-IDWeakField::kh_u2  =  1e-3
+IDWeakField::rho0   = 1.0e5
+IDWeakField::rho1   = 1.0e5
+IDWeakField::rho2   = 1.0e5
+IDWeakField::kh_u1  = -1.0
+IDWeakField::kh_u2  =  1.0
 
 GRHydro::method_type               = "RSA FV"
 GRHydro::recon_method              = "ppm"
