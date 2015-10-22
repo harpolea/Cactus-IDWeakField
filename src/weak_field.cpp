@@ -185,10 +185,10 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
 
         // Check density not too small
         if (rho[i] < 1.e-20) {
-        rho[i          ] = 1.e-20;
-        vel[i          ] = 0.0;
-        vel[i+2*npoints] = 0.0;
-        eps[i          ] = 0.0;
+            rho[i          ] = 1.e-20;
+            vel[i          ] = 0.0;
+            vel[i+2*npoints] = 0.0;
+            eps[i          ] = 0.0;
         }
 
     } // for i

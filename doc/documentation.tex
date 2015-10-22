@@ -99,7 +99,11 @@
 
 % Add an abstract for this thorn's documentation
 \begin{abstract}
-
+    This thorn creates the initial data for a region of fluid in a weak gravitational field, given by the metric
+        \begin{equation}
+            ds^2 = -\left(1-\frac{2GM}{rc^2}\right)dt^2 + \left(1+\frac{2GM}{rc^2}\right)\left(dx^2 + dr^2\right),
+        \end{equation}
+    where \(G\) is the gravitational constant and \(M\) the mass of the star. The region can be set up such that the fluid contains a convectively unstable bubble, or two layers of fluid unstable to either the Rayleigh-Taylor or Kelvin-Helmholtz instabilities.
 \end{abstract}
 
 % The following sections are suggestive only.
@@ -107,7 +111,37 @@
 
 \section{Introduction}
 
-\section{Physical System}
+\section{Bubble}
+\label{sec:Bubble}
+A circular region of underdense material was placed in a fluid vertically stratified by the gravitational field. The bubble is convectively unstable, so rises. The bottom boundary was reflective, the top outflow and the horizontal edges periodic.
+
+\section{Kelvin-Helmholtz instability}
+\label{sec:Kelvin-Helmholtz}
+The Kelvin-Helmholtz instability was simulated by placing a dense fluid on top of less dense one, with gravitational field acting in the vertical direction. The two sections of fluid move slowly in opposite directions so there is shearing at their interface. The initial conditions for the horizontal velocity were:
+\begin{equation}
+U^x = \begin{cases} U_1 - U_m\exp\left(\frac{y - y_\text{center}}{L_x}\right) & \text{if } y \leq y_\text{center}\\
+U_2 + U_m\exp\left(\frac{-y + y_\text{center}}{L_x}\right) & \text{if } y > y_\text{center}\end{cases},
+\end{equation}
+where \(L_x\) is the horizontal extent of the numerical domain, \(U_1\), \(U_2\) are the velocities of the sections fluid at infinity in the vertical direction and \(U_m = \frac{1}{2}(U_2-U_1)\). The initial conditions for the density are identical, but with \(D\) exchanged for \(U\).
+
+Outflow boundaries were used for the vertical edges and periodic for the horizontal. Seed instability by making a small sinusoidal perturbation to the vertical velocity:
+\begin{equation}
+U^y = A \sin\left(\frac{4 \pi x}{L_x}\right),
+\end{equation}
+where \(A\) is some small constant (0.005 was used here).
+
+\section{Rayleigh-Taylor instability}
+\label{sec:Rayleigh-Taylor}
+The Rayleigh-Taylor instability was modelled by playing a dense fluid on top of a less dense one, with a gravitational field acting in the vertical direction. The instability was then seeded by making small sinusoidal perturbation of the vertical velocity:
+\begin{equation}
+U^y = A \cos\left(\frac{2\pi x}{L_x}\right) \exp\left(-\frac{(y-y_\text{center})^2}{\sigma^2}\right),
+\end{equation}
+where \(L_x\) is the horizontal extent of the numerical domain, \(y_\text{center}\) is the vertical coordinate at the centre of the domain and \(A\), \(\sigma\) are some small constants (0.1 was used here). The boundary between the fluids of different densities was smoothed to eradicate very high density gradients in the initial data, which can be difficult to deal with numerically
+\begin{equation}
+D = D_1 + \frac{1}{2}(D_2 - D_1)\left(1 + \tanh\left[\frac{y - y_\text{center}}{0.5y_\text{smooth}}\right]\right),
+\end{equation}
+where \(D_1 < D_2\).
+Outflow boundary conditions were used for the top and bottom boundaries and periodic for the horizontal boundaries. 
 
 \section{Numerical Implementation}
 

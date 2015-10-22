@@ -5,7 +5,7 @@ ActiveThorns = "pugh pughreduce pughslab LocalReduce"
 cactus::cctk_run_title = "Weak field"
 cactus::cctk_itlast 			= 	5000
 
-driver::ghost_size			=	2
+driver::ghost_size			=	3
 driver::global_nx 			= 	20
 driver::global_ny 			= 	20
 driver::global_nz 			= 	20
@@ -20,12 +20,31 @@ grid::domain 				= 	"full"
 CoordBase::xmin =   0.0
 CoordBase::ymin =   0.0
 CoordBase::zmin =   0.0
-CoordBase::xmax = 100.0
-CoordBase::ymax = 100.0
-CoordBase::zmax = 100.0
-CoordBase::dx   =   5.0  # dx or ncells_x
-CoordBase::dy   =   5.0  # dy or ncells_y
-CoordBase::dz   =   5.0  # dz or ncells_z
+CoordBase::xmax = 1000.0
+CoordBase::ymax = 1000.0
+CoordBase::zmax = 1000.0
+CoordBase::dx   =   50.0  # dx or ncells_x
+CoordBase::dy   =   50.0  # dy or ncells_y
+CoordBase::dz   =   50.0  # dz or ncells_z
+
+CoordBase::boundary_size_x_lower        = 3
+CoordBase::boundary_size_y_lower        = 3
+CoordBase::boundary_size_z_lower        = 3
+CoordBase::boundary_size_x_upper        = 3
+CoordBase::boundary_size_y_upper        = 3
+CoordBase::boundary_size_z_upper        = 3
+CoordBase::boundary_shiftout_x_lower    = 0
+CoordBase::boundary_shiftout_y_lower    = 0
+CoordBase::boundary_shiftout_z_lower    = 0
+CoordBase::boundary_shiftout_x_upper    = 0
+CoordBase::boundary_shiftout_y_upper    = 0
+CoordBase::boundary_shiftout_z_upper    = 0
+CoordBase::boundary_staggered_x_lower   = "yes"
+CoordBase::boundary_staggered_y_lower   = "yes"
+CoordBase::boundary_staggered_z_lower   = "yes"
+CoordBase::boundary_staggered_x_upper   = "yes"
+CoordBase::boundary_staggered_y_upper   = "yes"
+CoordBase::boundary_staggered_z_upper   = "yes"
 
 ActiveThorns = "time"
 
@@ -45,8 +64,8 @@ IOASCII::out1D_vars 			= 	"hydrobase::w_lorentz hydrobase::rho hydrobase::press 
 
 ActiveThorns = "nanchecker mol"
 
-methodoflines::ode_method 		= 	"rk2"
-methodoflines::mol_intermediate_steps	=	2
+methodoflines::ode_method 		= 	"rk3"
+methodoflines::mol_intermediate_steps	=	3
 
 ActiveThorns = "ADMBase StaticConformal CoordGauge ADMCoupling Tmunubase SpaceMask ADMMacros"
 
@@ -62,6 +81,8 @@ ADMBase::initial_data           =   "weak_field"
 ADMBase::initial_lapse          =   "weak_field"
 ADMBase::initial_shift			=	"zero"
 ADMBase::metric_type			= 	"physical"
+ADMBase::initial_dtlapse         = "none"
+ADMBase::initial_dtshift         = "none"
 
 SpaceMask::use_mask = "yes"
 
@@ -69,15 +90,17 @@ ActiveThorns = "eos_omni"
 
 hydrobase::timelevels			= 2
 hydrobase::evolution_method       = "GRHydro"
-hydrobase::initial_hydro        = "kh"
+hydrobase::initial_hydro        = "bubble"
 
-GRHydro::riemann_solver			=	"Roe"
+GRHydro::riemann_solver			=	"HLLE"
 GRHydro::GRHydro_eos_type			=	"General"
 GRHydro::GRHydro_eos_table		=	"Ideal_Fluid"
-GRHydro::GRHydro_stencil			=	2
-GRHydro::recon_method			=	"tvd"
+GRHydro::GRHydro_stencil			=	3
+GRHydro::recon_method			=	"ppm"
+GRHydro::recon_vars                = "primitive"
 GRHydro::tvd_limiter			=	"minmod"
-GRHydro::bound				=	"flat"
+GRHydro::bound				=	"none"
+GRHydro::method_type               = "RSA FV"
 
 IDWeakField::rho0   =   1.0e5
 IDWeakField::rho1   =   1.0e5
