@@ -1,31 +1,32 @@
 !DESC "RK2, Roe, TVD-Minmod, Ideal Gas"
 
-ActiveThorns = "pugh pughreduce pughslab LocalReduce"
+ActiveThorns = "Carpet CarpetInterp CarpetIOASCII CarpetIOHDF5 CarpetIOScalar CarpetLib CarpetIOBasic CarpetReduce CarpetRegrid2 CarpetSlab LoopControl IOUtil"
 
 cactus::cctk_run_title = "Weak field"
-cactus::cctk_itlast 			= 	5000
+cactus::cctk_itlast 			= 	1e9
 
 driver::ghost_size			=	3
-driver::global_nx 			= 	20
-driver::global_ny 			= 	20
-driver::global_nz 			= 	20
 
 ActiveThorns = "coordbase symbase cartgrid3d boundary initbase"
 
 InitBase::initial_data_setup_method = "init_all_levels"
 
-grid::type 				= 	"coordbase"
-grid::domain 				= 	"full"
-#grid::dxyz 				= 	0.5
+Carpet::domain_from_coordbase    = "yes"
+
+CartGrid3d::type 				= 	"coordbase"
+CartGrid3D::domain 				= 	"full"
+CoordBase::spacing          = "gridspacing"
+CoordBase::domainsize       = "minmax"
+CartGrid3D::avoid_origin = "no"
 CoordBase::xmin =   0.0
-CoordBase::ymin =   0.0
+CoordBase::ymin =   -500.0
 CoordBase::zmin =   0.0
 CoordBase::xmax = 1000.0
-CoordBase::ymax = 1000.0
+CoordBase::ymax = 500.0
 CoordBase::zmax = 1000.0
-CoordBase::dx   =   50.0  # dx or ncells_x
-CoordBase::dy   =   50.0  # dy or ncells_y
-CoordBase::dz   =   50.0  # dz or ncells_z
+CoordBase::dx   =   10.0  # dx or ncells_x
+CoordBase::dy   =   500.0  # dy or ncells_y
+CoordBase::dz   =   10.0  # dz or ncells_z
 
 CoordBase::boundary_size_x_lower        = 3
 CoordBase::boundary_size_y_lower        = 3
@@ -39,18 +40,17 @@ CoordBase::boundary_shiftout_z_lower    = 0
 CoordBase::boundary_shiftout_x_upper    = 0
 CoordBase::boundary_shiftout_y_upper    = 0
 CoordBase::boundary_shiftout_z_upper    = 0
-CoordBase::boundary_staggered_x_lower   = "yes"
-CoordBase::boundary_staggered_y_lower   = "yes"
-CoordBase::boundary_staggered_z_lower   = "yes"
-CoordBase::boundary_staggered_x_upper   = "yes"
-CoordBase::boundary_staggered_y_upper   = "yes"
-CoordBase::boundary_staggered_z_upper   = "yes"
+#CoordBase::boundary_staggered_x_lower   = "yes"
+#CoordBase::boundary_staggered_y_lower   = "yes"
+#CoordBase::boundary_staggered_z_lower   = "yes"
+#CoordBase::boundary_staggered_x_upper   = "yes"
+#CoordBase::boundary_staggered_y_upper   = "yes"
+#CoordBase::boundary_staggered_z_upper   = "yes"
 
 ActiveThorns = "time"
 
 time::dtfac 				= 	0.25
 
-ActiveThorns = "ioutil ioascii iobasic"
 ActiveThorns = "hydrobase GRHydro"
 
 IO::out_fileinfo			=	"none"
@@ -61,6 +61,12 @@ IOBasic::outInfo_vars 			= 	"HydroBase::rho HydroBase::vel"
 
 IOASCII::out1D_every 			= 	1
 IOASCII::out1D_vars 			= 	"hydrobase::w_lorentz hydrobase::rho hydrobase::press hydrobase::eps HydroBase::vel GRHydro::dens GRHydro::tau GRHydro::scon"
+
+CarpetIOHDF5::one_file_per_group             = "yes"
+CarpetIOHDF5::open_one_input_file_at_a_time  = "yes"
+CarpetIOHDF5::out3D_every = 100
+CarpetIOHDF5::out3D_vars = "
+hydrobase::w_lorentz hydrobase::rho hydrobase::press hydrobase::eps HydroBase::vel"
 
 ActiveThorns = "nanchecker mol"
 
@@ -106,9 +112,9 @@ IDWeakField::rho0   =   1.0e5
 IDWeakField::rho1   =   1.0e5
 IDWeakField::rho2   =   1.1e5
 IDWeakField::eos_gamma = 5.0/3.0
-IDWeakField::bubble_x_pert = 0.005
-IDWeakField::bubble_z_pert = 0.005
-IDWeakField::bubble_r_pert = 0.001
+IDWeakField::bubble_x_pert = 0.5
+IDWeakField::bubble_z_pert = 0.5
+IDWeakField::bubble_r_pert = 100.0
 IDWeakField::bubble_amp    = 1.1
 IDWeakField::rt_amp = 0.1
 IDWeakField::rt_sigma      = 0.1

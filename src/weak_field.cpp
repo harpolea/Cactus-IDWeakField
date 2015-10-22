@@ -104,7 +104,7 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
         yy[i] = y[i] / cactusL;
         zz[i] = z[i] / cactusL;
 
-        double rr = RR + sqrt(xx[i]*xx[i] + yy[i]*yy[i] + zz[i]*zz[i]);
+        double rr = RR + zz[i];
 
         alp[i] = sqrt(1.0 - 2.0 * mass / rr);
 
@@ -136,9 +136,11 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
 
           double r_coord = sqrt(pow(xx[i]-bubble_x_pert*(xmax-xmin),2) + pow(zz[i]-bubble_z_pert*(zmax-zmin),2));
 
-          if (r_coord <= bubble_r_pert)
+          cout << r_coord << '\n';
+
+          if (r_coord <= bubble_r_pert/cactusL)
           {
-              eps[i] += eps[i] * (bubble_amp - 1.0) * 0.5 * (1.0 + tanh((2.0 - r_coord/(0.9 * bubble_r_pert))));
+              eps[i] += eps[i] * (bubble_amp - 1.0) * 0.5 * (1.0 + tanh((2.0 - r_coord/(0.9 * bubble_r_pert/cactusL))));
               rho[i] = pow(rho[i], eos_gamma) / (eps[i] * (eos_gamma - 1.0));
           }
 

@@ -96,8 +96,8 @@ hydrobase::initial_hydro          = "kh"
 IDWeakField::rho0   = 1.0e5
 IDWeakField::rho1   = 1.0e5
 IDWeakField::rho2   = 1.0e5
-IDWeakField::kh_u1  = -1.0
-IDWeakField::kh_u2  =  1.0
+IDWeakField::kh_u1  = -100.0
+IDWeakField::kh_u2  =  100.0
 
 GRHydro::method_type               = "RSA FV"
 GRHydro::recon_method              = "ppm"
