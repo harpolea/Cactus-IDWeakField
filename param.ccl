@@ -83,20 +83,20 @@ REAL eos_gamma "ratio of specific heats"
     0.0: :: "real"
 } 1.666666666666667
 
-REAL bubble_x_pert "position in the x-direction of the bubble in cm"
+REAL bubble_x_pos "position in the x-direction of the bubble as a fraction of the domain size in the x-direction"
 {
     : :: "real"
 } 0.5
 
-REAL bubble_z_pert "position in the y-direction of the bubble in cm"
+REAL bubble_z_pos "position in the z-direction of the bubble as a fraction of the domain size in the z-direction"
 {
     : :: "real"
 } 0.5
 
-REAL bubble_r_pert "radius of the bubble in cm"
+REAL bubble_r "radius of the bubble in cm"
 {
     : :: "real"
-} 0.5
+} 50.0
 
 REAL bubble_amp "amplitude of bubble perturbation"
 {

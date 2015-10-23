@@ -1,6 +1,6 @@
 !DESC "RK2, Roe, TVD-Minmod, Ideal Gas"
 
-ActiveThorns = "Carpet CarpetInterp CarpetIOASCII CarpetIOHDF5 CarpetIOScalar CarpetLib CarpetIOBasic CarpetReduce CarpetRegrid2 CarpetSlab LoopControl IOUtil"
+ActiveThorns = "Carpet CarpetInterp CarpetIOASCII CarpetIOHDF5 CarpetIOScalar CarpetLib CarpetIOBasic CarpetReduce CarpetRegrid2 CarpetSlab LoopControl IOUtil Slab Periodic"
 
 cactus::cctk_run_title = "Weak field"
 cactus::cctk_itlast 			= 	1e9
@@ -46,6 +46,11 @@ CoordBase::boundary_shiftout_z_upper    = 0
 #CoordBase::boundary_staggered_x_upper   = "yes"
 #CoordBase::boundary_staggered_y_upper   = "yes"
 #CoordBase::boundary_staggered_z_upper   = "yes"
+
+Periodic::periodic    = "yes"
+Periodic::periodic_x  = "yes"
+Periodic::periodic_y  = "yes"
+Periodic::periodic_z  = "no"
 
 ActiveThorns = "time"
 
@@ -99,8 +104,8 @@ hydrobase::evolution_method       = "GRHydro"
 hydrobase::initial_hydro        = "bubble"
 
 GRHydro::riemann_solver			=	"HLLE"
-GRHydro::GRHydro_eos_type			=	"General"
-GRHydro::GRHydro_eos_table		=	"Ideal_Fluid"
+#GRHydro::GRHydro_eos_type			=	"General"
+#GRHydro::GRHydro_eos_table		=	"Ideal_Fluid"
 GRHydro::GRHydro_stencil			=	3
 GRHydro::recon_method			=	"ppm"
 GRHydro::recon_vars                = "primitive"

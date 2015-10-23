@@ -59,7 +59,7 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
     int const npoints = cctk_lsh[0] * cctk_lsh[1] * cctk_lsh[2];
     vector<double> xx(npoints), yy(npoints), zz(npoints);
 
-    // I hope that the coordinates have been ordered logically
+    // Get physcial size of domain
     CCTK_INT const size = 3;
     CCTK_REAL physical_min[3];
     CCTK_REAL physical_max[3];
@@ -76,6 +76,7 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
        & spacing);
     double xmin, xmax, zmin, zmax;
 
+    // convert domain sizes to cactus units
     xmin = physical_min[0] / cactusL;
     xmax = physical_max[0] / cactusL;
     zmin = physical_min[2] / cactusL;
@@ -95,6 +96,7 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
     double _rho2 = rho2 / rho_unit;
     double _kh_u1 = kh_u1 / vel_unit;
     double _kh_u2 = kh_u2 / vel_unit;
+    double bubble_radius = bubble_r / cactusL;
 
     CCTK_INFO ("Filling in Cactus grid points");
 
@@ -104,8 +106,10 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
         yy[i] = y[i] / cactusL;
         zz[i] = z[i] / cactusL;
 
+        // add vertical direction to radius
         double rr = RR + zz[i];
 
+        // initialise metric terms
         alp[i] = sqrt(1.0 - 2.0 * mass / rr);
 
         gxx[i] = sqrt(1.0 + 2.0 * mass / rr);
@@ -123,24 +127,25 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
         kyz[i] = 0.0;
         kzz[i] = 0.0;
 
+        // gravitational potential
         double g = mass / rr;
 
         // y velocity zero everywhere
         vel[i+  npoints] = 0.0;
 
+        // bubble problem
         if (CCTK_EQUALS (initial_hydro, "bubble")) {
 
-          rho[i] = _rho0 * exp(-g * zz[i] / (eos_gamma * RR * alp[i]*alp[i]));
+          rho[i] = _rho0 * exp(-g * zz[i] / (eos_gamma * rr * alp[i]*alp[i]));
 
           eps[i] = pow(rho[i], eos_gamma - 1.0) / (eos_gamma - 1.0);
 
-          double r_coord = sqrt(pow(xx[i]-bubble_x_pert*(xmax-xmin),2) + pow(zz[i]-bubble_z_pert*(zmax-zmin),2));
+          double r_coord = sqrt(pow(xx[i]-bubble_x_pos*(xmax-xmin),2) + pow(zz[i]-bubble_z_pos*(zmax-zmin),2));
 
-          cout << r_coord << '\n';
-
-          if (r_coord <= bubble_r_pert/cactusL)
+          if (r_coord <= bubble_radius)
           {
-              eps[i] += eps[i] * (bubble_amp - 1.0) * 0.5 * (1.0 + tanh((2.0 - r_coord/(0.9 * bubble_r_pert/cactusL))));
+              eps[i] += eps[i] * (bubble_amp - 1.0) * 0.5 * (1.0 + tanh((2.0 - r_coord/(0.9 * bubble_radius))));
+
               rho[i] = pow(rho[i], eos_gamma) / (eps[i] * (eos_gamma - 1.0));
           }
 
@@ -148,6 +153,7 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
           vel[i          ] = 0.0;
           vel[i+2*npoints] = 0.0;
 
+        //kelvin-helmholtz
         } else if (CCTK_EQUALS (initial_hydro, "kh")) {
 
           if (zz[i] < zcntr) {
@@ -170,6 +176,7 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
 
           eps[i] = pow(rho[i], eos_gamma - 1.0) / (eos_gamma - 1.0);
 
+        // rayleigh-taylor
         } else if (CCTK_EQUALS (initial_hydro, "rt")) {
 
           rho[i] = _rho1 + (_rho2 - _rho1) * 0.5 * (1.0 + tanh((zz[i]-zcntr) / 0.9 * z_smooth));
