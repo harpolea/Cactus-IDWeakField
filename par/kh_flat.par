@@ -21,15 +21,18 @@ CartGrid3D::avoid_origin = "no"
 CoordBase::domainsize       = "minmax"
 CoordBase::spacing          = "gridspacing"
 
-CoordBase::xmin = -1.0e3
-CoordBase::ymin = -1.0e3
-CoordBase::zmin = -1.0e3
-CoordBase::xmax =  1.0e3
-CoordBase::ymax =  1.0e3
-CoordBase::zmax =  1.0e3
-CoordBase::dx   = 0.02e3
-CoordBase::dy   = 0.5e3
-CoordBase::dz   = 0.02e3
+CoordBase::xmin = -7.5e4
+CoordBase::ymin = -7.5e4
+CoordBase::zmin = -1.5e5
+CoordBase::xmax =  7.5e4
+CoordBase::ymax =  7.5e4
+CoordBase::zmax =  1.5e5
+#CoordBase::dx   = 7.5e2
+#CoordBase::dy   = 7.5e4
+#CoordBase::dz   = 1.5e3
+CoordBase::dx   = 7.5e3
+CoordBase::dy   = 7.5e4
+CoordBase::dz   = 1.5e4
 
 CoordBase::boundary_size_x_lower        = 3
 CoordBase::boundary_size_y_lower        = 3
@@ -59,7 +62,7 @@ InitBase::initial_data_setup_method = "init_all_levels"
 
 ActiveThorns = "time"
 
-time::dtfac 				= 	0.25
+time::dtfac 				= 	0.5
 
 ActiveThorns = "hydrobase GRHydro"
 
@@ -93,11 +96,11 @@ hydrobase::timelevels			        = 2
 hydrobase::evolution_method       = "GRHydro"
 hydrobase::initial_hydro          = "kh"
 
-IDWeakField::rho0   = 1.0e5
-IDWeakField::rho1   = 1.0e5
-IDWeakField::rho2   = 1.0e5
-IDWeakField::kh_u1  = -100.0
-IDWeakField::kh_u2  =  100.0
+IDWeakField::rho0   = 3.1336e17
+IDWeakField::rho1   = 3.1336e17
+IDWeakField::rho2   = 3.07157e17
+IDWeakField::kh_u1  = -1.5e8
+IDWeakField::kh_u2  =  1.5e8
 
 GRHydro::method_type               = "RSA FV"
 GRHydro::recon_method              = "ppm"
@@ -111,15 +114,15 @@ GRHydro::bound				             = "none"
 IO::out_fileinfo			=	"none"
 IO::out_dir 				= 	$parfile
 
-IOBasic::outInfo_every 			= 	1
+IOBasic::outInfo_every 			= 	5
 IOBasic::outInfo_vars 			= 	"HydroBase::rho HydroBase::vel"
 
-IOASCII::out1D_every 			= 	1
+IOASCII::out1D_every 			= 	5
 IOASCII::out1D_vars 			= 	"hydrobase::w_lorentz hydrobase::rho hydrobase::press hydrobase::eps HydroBase::vel GRHydro::dens GRHydro::tau GRHydro::scon"
 
 CarpetIOHDF5::one_file_per_group             = "yes"
 CarpetIOHDF5::open_one_input_file_at_a_time  = "yes"
-CarpetIOHDF5::out3D_every = 10
+CarpetIOHDF5::out3D_every = 5
 CarpetIOHDF5::out3D_vars = "
 hydrobase::w_lorentz hydrobase::rho hydrobase::press hydrobase::eps HydroBase::vel
 "

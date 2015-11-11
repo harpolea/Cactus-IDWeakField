@@ -1,32 +1,35 @@
-!DESC "RK2, Roe, TVD-Minmod, Ideal Gas"
+!DESC "Bubble, RK3, PPM"
 
-ActiveThorns = "Carpet CarpetInterp CarpetIOASCII CarpetIOHDF5 CarpetIOScalar CarpetLib CarpetIOBasic CarpetReduce CarpetRegrid2 CarpetSlab LoopControl IOUtil Slab Periodic"
+ActiveThorns = "Carpet CarpetInterp CarpetIOASCII CarpetIOHDF5 CarpetIOScalar CarpetLib CarpetIOBasic CarpetReduce CarpetRegrid2 CarpetSlab LoopControl"
+ActiveThorns = "Boundary CartGrid3D CoordBase Fortran InitBase IOUtil LocalReduce SymBase Time"
+ActiveThorns = "AEILocalInterp LocalInterp"
+ActiveThorns = "MoL Periodic Slab SpaceMask"
 
 cactus::cctk_run_title = "Weak field"
-cactus::cctk_itlast 			= 	1e9
+cactus::cctk_itlast 			= 	5000
 
-driver::ghost_size			=	3
+driver::ghost_size			=   3
 
-ActiveThorns = "coordbase symbase cartgrid3d boundary initbase"
-
-InitBase::initial_data_setup_method = "init_all_levels"
+# grid parameters
 
 Carpet::domain_from_coordbase    = "yes"
 
-CartGrid3d::type 				= 	"coordbase"
-CartGrid3D::domain 				= 	"full"
-CoordBase::spacing          = "gridspacing"
-CoordBase::domainsize       = "minmax"
+CartGrid3D::type         = "coordbase"
+CartGrid3D::domain       = "full"
 CartGrid3D::avoid_origin = "no"
-CoordBase::xmin =   0.0
-CoordBase::ymin =   -500.0
-CoordBase::zmin =   0.0
-CoordBase::xmax = 1000.0
-CoordBase::ymax = 500.0
-CoordBase::zmax = 1000.0
-CoordBase::dx   =   10.0  # dx or ncells_x
-CoordBase::dy   =   500.0  # dy or ncells_y
-CoordBase::dz   =   10.0  # dz or ncells_z
+
+CoordBase::domainsize       = "minmax"
+CoordBase::spacing          = "gridspacing"
+
+CoordBase::xmin = -7.5e4
+CoordBase::ymin = -7.5e4
+CoordBase::zmin = 0.0
+CoordBase::xmax =  7.5e4
+CoordBase::ymax =  7.5e4
+CoordBase::zmax =  1.5e5
+CoordBase::dx   = 7.5e2
+CoordBase::dy   = 7.5e4
+CoordBase::dz   = 1.5e3
 
 CoordBase::boundary_size_x_lower        = 3
 CoordBase::boundary_size_y_lower        = 3
@@ -40,38 +43,25 @@ CoordBase::boundary_shiftout_z_lower    = 0
 CoordBase::boundary_shiftout_x_upper    = 0
 CoordBase::boundary_shiftout_y_upper    = 0
 CoordBase::boundary_shiftout_z_upper    = 0
-#CoordBase::boundary_staggered_x_lower   = "yes"
-#CoordBase::boundary_staggered_y_lower   = "yes"
-#CoordBase::boundary_staggered_z_lower   = "yes"
-#CoordBase::boundary_staggered_x_upper   = "yes"
-#CoordBase::boundary_staggered_y_upper   = "yes"
-#CoordBase::boundary_staggered_z_upper   = "yes"
+CoordBase::boundary_staggered_x_lower   = "yes"
+CoordBase::boundary_staggered_y_lower   = "yes"
+CoordBase::boundary_staggered_z_lower   = "yes"
+CoordBase::boundary_staggered_x_upper   = "yes"
+CoordBase::boundary_staggered_y_upper   = "yes"
+CoordBase::boundary_staggered_z_upper   = "yes"
 
 Periodic::periodic    = "yes"
 Periodic::periodic_x  = "yes"
 Periodic::periodic_y  = "yes"
-Periodic::periodic_z  = "no"
+Periodic::periodic_z  = "yes"
+
+InitBase::initial_data_setup_method = "init_all_levels"
 
 ActiveThorns = "time"
 
-time::dtfac 				= 	0.25
+time::dtfac 				= 	0.5
 
 ActiveThorns = "hydrobase GRHydro"
-
-IO::out_fileinfo			=	"none"
-IO::out_dir 				= 	$parfile
-
-IOBasic::outInfo_every 			= 	1
-IOBasic::outInfo_vars 			= 	"HydroBase::rho HydroBase::vel"
-
-IOASCII::out1D_every 			= 	1
-IOASCII::out1D_vars 			= 	"hydrobase::w_lorentz hydrobase::rho hydrobase::press hydrobase::eps HydroBase::vel GRHydro::dens GRHydro::tau GRHydro::scon"
-
-CarpetIOHDF5::one_file_per_group             = "yes"
-CarpetIOHDF5::open_one_input_file_at_a_time  = "yes"
-CarpetIOHDF5::out3D_every = 100
-CarpetIOHDF5::out3D_vars = "
-hydrobase::w_lorentz hydrobase::rho hydrobase::press hydrobase::eps HydroBase::vel"
 
 ActiveThorns = "nanchecker mol"
 
@@ -88,10 +78,10 @@ TmunuBase::prolongation_type		=	none
 ActiveThorns = "IDWeakField"
 
 ADMBase::evolution_method		=	"none"
-ADMBase::initial_data           =   "weak_field"
-ADMBase::initial_lapse          =   "weak_field"
-ADMBase::initial_shift			=	"zero"
-ADMBase::metric_type			= 	"physical"
+ADMBase::metric_type             = "physical"
+ADMBase::initial_data            = "Cartesian Minkowski"
+ADMBase::initial_lapse           = "one"
+ADMBase::initial_shift           = "zero"
 ADMBase::initial_dtlapse         = "none"
 ADMBase::initial_dtshift         = "none"
 
@@ -99,27 +89,44 @@ SpaceMask::use_mask = "yes"
 
 ActiveThorns = "eos_omni"
 
-hydrobase::timelevels			= 2
+hydrobase::timelevels			        = 2
 hydrobase::evolution_method       = "GRHydro"
-hydrobase::initial_hydro        = "bubble"
+hydrobase::initial_hydro          = "bubble"
 
-GRHydro::riemann_solver			=	"HLLE"
-#GRHydro::GRHydro_eos_type			=	"General"
-#GRHydro::GRHydro_eos_table		=	"Ideal_Fluid"
-GRHydro::GRHydro_stencil			=	3
-GRHydro::recon_method			=	"ppm"
-GRHydro::recon_vars                = "primitive"
-GRHydro::tvd_limiter			=	"minmod"
-GRHydro::bound				=	"none"
-GRHydro::method_type               = "RSA FV"
-
-IDWeakField::rho0   =   1.0e5
-IDWeakField::rho1   =   1.0e5
-IDWeakField::rho2   =   1.1e5
+IDWeakField::rho0   = 3.1336e17
+IDWeakField::rho1   = 3.1336e17
+IDWeakField::rho2   = 3.07157e17
+IDWeakField::kh_u1  = -1.5e8
+IDWeakField::kh_u2  =  1.5e8
 IDWeakField::eos_gamma = 5.0/3.0
-IDWeakField::bubble_x_pert = 0.5
-IDWeakField::bubble_z_pert = 0.5
-IDWeakField::bubble_r_pert = 100.0
+IDWeakField::bubble_x_pos = 0.5
+IDWeakField::bubble_z_pos = 0.5
+IDWeakField::bubble_r = 5.0e3
 IDWeakField::bubble_amp    = 1.1
 IDWeakField::rt_amp = 0.1
 IDWeakField::rt_sigma      = 0.1
+
+GRHydro::method_type               = "RSA FV"
+GRHydro::recon_method              = "ppm"
+GRHydro::recon_vars                = "primitive"
+GRHydro::riemann_solver            = "HLLE"
+GRHydro::GRHydro_stencil			     = 3
+GRHydro::bound				             = "none"
+
+# IO
+
+IO::out_fileinfo			=	"none"
+IO::out_dir 				= 	$parfile
+
+IOBasic::outInfo_every 			= 	1000
+IOBasic::outInfo_vars 			= 	"HydroBase::rho HydroBase::vel"
+
+IOASCII::out1D_every 			= 	1000
+IOASCII::out1D_vars 			= 	"hydrobase::w_lorentz hydrobase::rho hydrobase::press hydrobase::eps HydroBase::vel GRHydro::dens GRHydro::tau GRHydro::scon"
+
+CarpetIOHDF5::one_file_per_group             = "yes"
+CarpetIOHDF5::open_one_input_file_at_a_time  = "yes"
+CarpetIOHDF5::out3D_every = 1000
+CarpetIOHDF5::out3D_vars = "
+hydrobase::w_lorentz hydrobase::rho hydrobase::press hydrobase::eps HydroBase::vel
+"

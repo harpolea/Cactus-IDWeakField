@@ -8,8 +8,11 @@
 # Change to the directory that the job was submitted from
 cd $PBS_O_WORKDIR
 
-# load openmpi
+module purge
 module load openmpi
+module load torque/current
+module load intel/15.0
+module load intel/mpi/5.0.1.035
 
 # Launch the parallel job
 mpirun exe/cactus_sim $PBS_O_WORKDIR/arrangements/EinsteinInitialData/IDWeakField/par/kh_flat.par

@@ -38,11 +38,6 @@ USES REAL initial_atmosphere_factor
 
 PRIVATE:
 
-STRING filename "Input file name"
-{
-  "" :: ""
-} ""
-
 REAL kh_u1 "Kelvin-Helmholtz u1 in cm/s"
 {
     : :: "real"

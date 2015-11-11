@@ -11,11 +11,35 @@
 #include <cctk_Parameters.h>
 #include <cctk_Functions.h>
 
-// if changed the config:
-// make sim-config options=simfactory/mdb/optionlists/ubuntu.cfg
-// otherwise:
-// make sim
-// mpirun -np 4 exe/cactus_sim arrangements/EinsteinInitialData/IDWeakField/par/weak_field.par
+/*
+if changed the config:
+
+    make sim-config THORNLIST=thornlists/einsteintoolkit.th options=simfactory/mdb/optionlists/ubuntu.cfg
+
+otherwise:
+
+    make sim
+    mpirun -np 4 exe/cactus_sim arrangements/EinsteinInitialData/IDWeakField/par/weak_field.par
+
+simfactory stuff:
+sync the sourcetree to iridis:
+
+    sim sync iridis4 --sync-sourcetree
+
+build simulation:
+
+    sim build SIMNAME --optionlist=simfactory/mdb/optionlists/iridis4.cfg --thornlist=thornlists/einsteintoolkit.th --machine=iridis4
+
+submit job (queue can be test for small stuff or otherwise batch):
+
+    sim create-submit JOBNAME --config=SIMNAME --parfile=par/PARFILE.par --procs=NUMBEROFPROCESSORS --walltime=##:##:00 --queue=batch --machine=iridis4
+
+check job status with
+
+    qstat
+
+*/
+
 
 #include "weak_field.h"
 
@@ -39,7 +63,7 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
     CCTK_REAL const G_grav = 6.67428e-8; // gravitational constant [cm^3/g/s^2]
     CCTK_REAL const M_sun  = 1.98892e+33; // solar mass [g]
 
-    // Cactus units in terms of SI units:
+    // Cactus units in terms of cgs units:
     // (These are derived from M = M_sun, c = G = 1, and using 1/M_sun
     // for the magnetic field)
     CCTK_REAL const cactusM = M_sun;
@@ -47,7 +71,6 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
     CCTK_REAL const cactusT = cactusL / c_light;
 
     // Other quantities in terms of Cactus units
-    //CCTK_REAL const coord_unit = cactusL / 1.0e+3;         // from km
     CCTK_REAL const rho_unit   = cactusM / pow(cactusL,3); // from g/cm^3
     //CCTK_REAL const ener_unit  = pow(cactusL,2);           // from c^2
     CCTK_REAL const vel_unit   = c_light; // from cm/s
@@ -142,11 +165,13 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
 
           double r_coord = sqrt(pow(xx[i]-bubble_x_pos*(xmax-xmin),2) + pow(zz[i]-bubble_z_pos*(zmax-zmin),2));
 
+          // boost specific internal energy, keeping the pressure
+          // constant, by dropping the density
           if (r_coord <= bubble_radius)
           {
               eps[i] += eps[i] * (bubble_amp - 1.0) * 0.5 * (1.0 + tanh((2.0 - r_coord/(0.9 * bubble_radius))));
 
-              rho[i] = pow(rho[i], eos_gamma) / (eps[i] * (eos_gamma - 1.0));
+              rho[i] = pow(eps[i] * (eos_gamma - 1.0), 1.0 / (eos_gamma - 1.0));
           }
 
           // velocity zero everywhere
@@ -156,20 +181,33 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
         //kelvin-helmholtz
         } else if (CCTK_EQUALS (initial_hydro, "kh")) {
 
+
           if (zz[i] < zcntr) {
-              rho[i] = _rho1 - (_rho2-_rho1) * exp((zz[i]-zcntr)/(0.025*(xmax-xmin)));
+              //rho[i] = _rho1 - (_rho2-_rho1) * exp((zz[i]-zcntr)/(0.025*(xmax-xmin)));
 
               // u
-              vel[i] = _kh_u1 - (_kh_u2-_kh_u1) * exp((zz[i]-zcntr)/(0.025*(xmax-xmin)));
+              //vel[i] = _kh_u1 - (_kh_u2-_kh_u1) * exp((zz[i]-zcntr)/(0.025*(xmax-xmin)));
 
+              //rho[i] = _rho1;
+              //vel[i] = _kh_u1;
 
           } else {
-              rho[i] = _rho2 + (_rho2-_rho1) * exp((-zz[i]+zcntr)/(0.025*(xmax-xmin)));
+              //rho[i] = _rho2 + (_rho2-_rho1) * exp((-zz[i]+zcntr)/(0.025*(xmax-xmin)));
 
               // u
-              vel[i] = _kh_u2 + (_kh_u2-_kh_u1) * exp((-zz[i]+zcntr)/(0.025*(xmax-xmin)));
+              //vel[i] = _kh_u2 + (_kh_u2-_kh_u1) * exp((-zz[i]+zcntr)/(0.025*(xmax-xmin)));
+
+              //rho[i] = _rho2;
+              //vel[i] = _kh_u2;
 
           }
+
+
+          // exp didn't work, so shall try tanh (didn't work either...)
+          rho[i] = _rho1 + (_rho2 - _rho1) * 0.5 * (1.0 + \
+            tanh((zz[i] - zcntr)/(0.025*(xmax-xmin))));
+          vel[i] = _kh_u1 + (_kh_u2 - _kh_u1) * 0.5 * (1.0 + \
+              tanh((zz[i] - zcntr)/(0.025*(xmax-xmin))));
 
           // v
           vel[i+2*npoints] = 0.5 * _kh_u1 * sin(4.0 * M_PI * (xx[i] + 0.5 * (xmax-xmin))/(xmax-xmin));
@@ -193,8 +231,8 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
         }
 
         // Check density not too small
-        if (rho[i] < 1.e-20) {
-            rho[i          ] = 1.e-20;
+        if (rho[i] < 1.e-30) {
+            rho[i          ] = 1.e-30;
             vel[i          ] = 0.0;
             vel[i+2*npoints] = 0.0;
             eps[i          ] = 0.0;
@@ -205,7 +243,6 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
 
     CCTK_INFO ("Done.");
     } catch (ios::failure e) {
-      CCTK_VWarn (CCTK_WARN_ABORT, __LINE__, __FILE__, CCTK_THORNSTRING,
-                  "Could not read initial data from file '%s': %s", filename, e.what());
+      CCTK_WARN (CCTK_WARN_ABORT, "Something broke");
     }
 }
