@@ -1,6 +1,6 @@
 # Interface definition for thorn IDWeakField
 implements: IDWeakField
-inherits: ADMBase, HydroBase, StaticConformal
+inherits: ADMBase, HydroBase, StaticConformal, GRHydro
 
 public:
 

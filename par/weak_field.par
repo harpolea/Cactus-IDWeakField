@@ -53,7 +53,7 @@ CoordBase::boundary_staggered_z_upper   = "yes"
 Periodic::periodic    = "yes"
 Periodic::periodic_x  = "yes"
 Periodic::periodic_y  = "yes"
-Periodic::periodic_z  = "yes"
+Periodic::periodic_z  = "no"
 
 InitBase::initial_data_setup_method = "init_all_levels"
 
@@ -112,6 +112,8 @@ GRHydro::recon_vars                = "primitive"
 GRHydro::riemann_solver            = "HLLE"
 GRHydro::GRHydro_stencil			     = 3
 GRHydro::bound				             = "none"
+GRHydro::number_of_tracers          = 1
+GRHydro::evolve_tracer              = "yes"
 
 # IO
 

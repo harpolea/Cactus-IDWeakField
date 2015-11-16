@@ -18,7 +18,7 @@ if changed the config:
 
 otherwise:
 
-    make sim
+    make sim -j4
     mpirun -np 4 exe/cactus_sim arrangements/EinsteinInitialData/IDWeakField/par/weak_field.par
 
 simfactory stuff:
@@ -155,6 +155,8 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
 
         // y velocity zero everywhere
         vel[i+  npoints] = 0.0;
+        tracer[i] = 0.0;
+        cons_tracer[i] = 0.0;
 
         // bubble problem
         if (CCTK_EQUALS (initial_hydro, "bubble")) {
@@ -188,8 +190,11 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
               // u
               //vel[i] = _kh_u1 - (_kh_u2-_kh_u1) * exp((zz[i]-zcntr)/(0.025*(xmax-xmin)));
 
-              //rho[i] = _rho1;
-              //vel[i] = _kh_u1;
+              rho[i] = _rho1;
+              vel[i] = _kh_u1;
+
+              tracer[i] = 1.0;
+              cons_tracer[i] = rho[i] * 1.0;
 
           } else {
               //rho[i] = _rho2 + (_rho2-_rho1) * exp((-zz[i]+zcntr)/(0.025*(xmax-xmin)));
@@ -197,17 +202,22 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
               // u
               //vel[i] = _kh_u2 + (_kh_u2-_kh_u1) * exp((-zz[i]+zcntr)/(0.025*(xmax-xmin)));
 
-              //rho[i] = _rho2;
-              //vel[i] = _kh_u2;
+              rho[i] = _rho2;
+              vel[i] = _kh_u2;
+
+              tracer[i] = 0.0;
+              cons_tracer[i] = 0.0;
 
           }
 
 
           // exp didn't work, so shall try tanh (didn't work either...)
-          rho[i] = _rho1 + (_rho2 - _rho1) * 0.5 * (1.0 + \
+          //rho[i] = _rho1 + (_rho2 - _rho1) * 0.5 * (1.0 + \
             tanh((zz[i] - zcntr)/(0.025*(xmax-xmin))));
-          vel[i] = _kh_u1 + (_kh_u2 - _kh_u1) * 0.5 * (1.0 + \
+          //vel[i] = _kh_u1 + (_kh_u2 - _kh_u1) * 0.5 * (1.0 + \
               tanh((zz[i] - zcntr)/(0.025*(xmax-xmin))));
+
+
 
           // v
           vel[i+2*npoints] = 0.5 * _kh_u1 * sin(4.0 * M_PI * (xx[i] + 0.5 * (xmax-xmin))/(xmax-xmin));

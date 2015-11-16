@@ -3,10 +3,10 @@
 ActiveThorns = "Carpet CarpetInterp CarpetIOASCII CarpetIOHDF5 CarpetIOScalar CarpetLib CarpetIOBasic CarpetReduce CarpetRegrid2 CarpetSlab LoopControl"
 ActiveThorns = "Boundary CartGrid3D CoordBase Fortran InitBase IOUtil LocalReduce SymBase Time"
 ActiveThorns = "AEILocalInterp LocalInterp"
-ActiveThorns = "MoL Periodic Slab SpaceMask"
+ActiveThorns = "MoL Periodic Slab SpaceMask ReflectionSymmetry"
 
 cactus::cctk_run_title = "Weak field"
-cactus::cctk_itlast 			= 	5000
+cactus::cctk_itlast 			= 	500000
 
 driver::ghost_size			=   3
 
@@ -27,12 +27,12 @@ CoordBase::zmin = -1.5e5
 CoordBase::xmax =  7.5e4
 CoordBase::ymax =  7.5e4
 CoordBase::zmax =  1.5e5
-#CoordBase::dx   = 7.5e2
-#CoordBase::dy   = 7.5e4
-#CoordBase::dz   = 1.5e3
-CoordBase::dx   = 7.5e3
+CoordBase::dx   = 6.0e2
 CoordBase::dy   = 7.5e4
-CoordBase::dz   = 1.5e4
+CoordBase::dz   = 1.2e3
+#CoordBase::dx   = 7.5e3
+#CoordBase::dy   = 7.5e4
+#CoordBase::dz   = 1.5e4
 
 CoordBase::boundary_size_x_lower        = 3
 CoordBase::boundary_size_y_lower        = 3
@@ -56,7 +56,9 @@ CoordBase::boundary_staggered_z_upper   = "yes"
 Periodic::periodic    = "yes"
 Periodic::periodic_x  = "yes"
 Periodic::periodic_y  = "yes"
-Periodic::periodic_z  = "yes"
+Periodic::periodic_z  = "no"
+
+ReflectionSymmetry::reflection_z = "yes"
 
 InitBase::initial_data_setup_method = "init_all_levels"
 
@@ -108,21 +110,23 @@ GRHydro::recon_vars                = "primitive"
 GRHydro::riemann_solver            = "HLLE"
 GRHydro::GRHydro_stencil			     = 3
 GRHydro::bound				             = "none"
+GRHydro::number_of_tracers          = 1
+GRHydro::evolve_tracer              = "yes"
 
 # IO
 
 IO::out_fileinfo			=	"none"
 IO::out_dir 				= 	$parfile
 
-IOBasic::outInfo_every 			= 	5
+IOBasic::outInfo_every 			= 1000
 IOBasic::outInfo_vars 			= 	"HydroBase::rho HydroBase::vel"
 
-IOASCII::out1D_every 			= 	5
-IOASCII::out1D_vars 			= 	"hydrobase::w_lorentz hydrobase::rho hydrobase::press hydrobase::eps HydroBase::vel GRHydro::dens GRHydro::tau GRHydro::scon"
+IOASCII::out1D_every 			= 	1000
+IOASCII::out1D_vars 			= 	"hydrobase::w_lorentz hydrobase::rho hydrobase::press hydrobase::eps HydroBase::vel GRHydro::dens GRHydro::tau GRHydro::scon GRHydro::GRHydro_tracers"
 
 CarpetIOHDF5::one_file_per_group             = "yes"
 CarpetIOHDF5::open_one_input_file_at_a_time  = "yes"
-CarpetIOHDF5::out3D_every = 5
+CarpetIOHDF5::out3D_every = 1000
 CarpetIOHDF5::out3D_vars = "
-hydrobase::w_lorentz hydrobase::rho hydrobase::press hydrobase::eps HydroBase::vel
+hydrobase::w_lorentz hydrobase::rho hydrobase::press hydrobase::eps HydroBase::vel GRHydro::GRHydro_tracers
 "
