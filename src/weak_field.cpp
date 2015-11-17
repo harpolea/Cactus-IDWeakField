@@ -155,8 +155,6 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
 
         // y velocity zero everywhere
         vel[i+  npoints] = 0.0;
-        tracer[i] = 0.0;
-        cons_tracer[i] = 0.0;
 
         // bubble problem
         if (CCTK_EQUALS (initial_hydro, "bubble")) {
@@ -165,7 +163,10 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
 
           eps[i] = pow(rho[i], eos_gamma - 1.0) / (eos_gamma - 1.0);
 
-          double r_coord = sqrt(pow(xx[i]-bubble_x_pos*(xmax-xmin),2) + pow(zz[i]-bubble_z_pos*(zmax-zmin),2));
+          double r_coord = sqrt(pow(xx[i]-bubble_x_pos*(xmax-xmin) - xmin,2) + pow(zz[i]-bubble_z_pos*(zmax-zmin)  -zmin,2));
+
+          tracer[i] = 0.0;
+          cons_tracer[i] = 0.0;
 
           // boost specific internal energy, keeping the pressure
           // constant, by dropping the density
@@ -174,6 +175,9 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
               eps[i] += eps[i] * (bubble_amp - 1.0) * 0.5 * (1.0 + tanh((2.0 - r_coord/(0.9 * bubble_radius))));
 
               rho[i] = pow(eps[i] * (eos_gamma - 1.0), 1.0 / (eos_gamma - 1.0));
+
+              tracer[i] = 1.0;
+              cons_tracer[i] = rho[i] * 1.0;
           }
 
           // velocity zero everywhere
@@ -235,6 +239,19 @@ void IDWeakField_initialise (CCTK_ARGUMENTS)
           vel[i+2*npoints] = rt_amp * cos(2.0 * M_PI * xx[i] / (xmax-xmin)) * exp(-(zz[i]-zcntr)*(zz[i]-zcntr)/(rt_sigma*rt_sigma));
 
           eps[i] = pow(rho[i], eos_gamma - 1.0) / (eos_gamma - 1.0);
+
+          if (zz[i] < zcntr) {
+
+              tracer[i] = 1.0;
+              cons_tracer[i] = rho[i] * 1.0;
+
+          } else {
+
+              tracer[i] = 0.0;
+              cons_tracer[i] = 0.0;
+
+          }
+
 
         } else {
           CCTK_WARN (CCTK_WARN_ABORT, "incorrect initial_hydro");

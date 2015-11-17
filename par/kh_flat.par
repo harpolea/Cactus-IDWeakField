@@ -53,10 +53,10 @@ CoordBase::boundary_staggered_x_upper   = "yes"
 CoordBase::boundary_staggered_y_upper   = "yes"
 CoordBase::boundary_staggered_z_upper   = "yes"
 
-Periodic::periodic    = "yes"
+#Periodic::periodic    = "yes"
 Periodic::periodic_x  = "yes"
 Periodic::periodic_y  = "yes"
-Periodic::periodic_z  = "no"
+#Periodic::periodic_z  = "no"
 
 ReflectionSymmetry::reflection_z = "yes"
 
@@ -84,8 +84,8 @@ ActiveThorns = "IDWeakField"
 
 ADMBase::evolution_method		=	"none"
 ADMBase::metric_type             = "physical"
-ADMBase::initial_data            = "Cartesian Minkowski"
-ADMBase::initial_lapse           = "one"
+ADMBase::initial_data            = "weak_field"
+ADMBase::initial_lapse           = "weak_field"
 ADMBase::initial_shift           = "zero"
 ADMBase::initial_dtlapse         = "none"
 ADMBase::initial_dtshift         = "none"
@@ -110,8 +110,9 @@ GRHydro::recon_vars                = "primitive"
 GRHydro::riemann_solver            = "HLLE"
 GRHydro::GRHydro_stencil			     = 3
 GRHydro::bound				             = "none"
+GRHydro::evolve_tracer              = yes
 GRHydro::number_of_tracers          = 1
-GRHydro::evolve_tracer              = "yes"
+
 
 # IO
 
@@ -122,11 +123,11 @@ IOBasic::outInfo_every 			= 1000
 IOBasic::outInfo_vars 			= 	"HydroBase::rho HydroBase::vel"
 
 IOASCII::out1D_every 			= 	1000
-IOASCII::out1D_vars 			= 	"hydrobase::w_lorentz hydrobase::rho hydrobase::press hydrobase::eps HydroBase::vel GRHydro::dens GRHydro::tau GRHydro::scon GRHydro::GRHydro_tracers"
+IOASCII::out1D_vars 			= 	"hydrobase::w_lorentz hydrobase::rho hydrobase::press hydrobase::eps HydroBase::vel GRHydro::dens GRHydro::tau GRHydro::scon GRHydro::GRHydro_tracers GRHydro::GRHydro_cons_tracers GRHydro::GRHydro_tracer_rhs GRHydro::GRHydro_tracer_flux"
 
 CarpetIOHDF5::one_file_per_group             = "yes"
 CarpetIOHDF5::open_one_input_file_at_a_time  = "yes"
 CarpetIOHDF5::out3D_every = 1000
 CarpetIOHDF5::out3D_vars = "
-hydrobase::w_lorentz hydrobase::rho hydrobase::press hydrobase::eps HydroBase::vel GRHydro::GRHydro_tracers
+hydrobase::w_lorentz hydrobase::rho hydrobase::press hydrobase::eps HydroBase::vel GRHydro::GRHydro_tracers GRHydro::GRHydro_cons_tracers GRHydro::GRHydro_tracer_rhs GRHydro::GRHydro_tracer_flux
 "
