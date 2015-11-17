@@ -112,6 +112,8 @@ GRHydro::GRHydro_stencil			     = 3
 GRHydro::bound				             = "none"
 GRHydro::evolve_tracer              = yes
 GRHydro::number_of_tracers          = 1
+GRHydro::GRHydro_MaxNumEvolvedVars = 6 # 5 + 1 tracer
+GRHydro::GRHydro_MaxNumConstrainedVars = 38 # 37 + 1 tracer
 
 
 # IO
