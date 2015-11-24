@@ -104,7 +104,7 @@ IDWeakField::eos_gamma = 5.0/3.0
 IDWeakField::bubble_x_pos = 0.5
 IDWeakField::bubble_z_pos = 0.5
 IDWeakField::bubble_r = 2.0e4
-IDWeakField::bubble_amp    = 1.1
+IDWeakField::bubble_amp    = 0.9
 IDWeakField::rt_amp = 0.1
 IDWeakField::rt_sigma      = 0.1
 
@@ -116,6 +116,9 @@ GRHydro::GRHydro_stencil			     = 3
 GRHydro::bound				             = "none"
 GRHydro::evolve_tracer              = yes
 GRHydro::number_of_tracers          = 1
+GRHydro::GRHydro_MaxNumEvolvedVars = 6 # 5 + 1 tracer
+GRHydro::GRHydro_MaxNumConstrainedVars = 38 # 37 + 1 tracer
+GRHydro::use_cxx_code = no
 
 # IO
 
@@ -126,11 +129,11 @@ IOBasic::outInfo_every 			= 	1000
 IOBasic::outInfo_vars 			= 	"HydroBase::rho HydroBase::vel"
 
 IOASCII::out1D_every 			= 	1000
-IOASCII::out1D_vars 			= 	"hydrobase::w_lorentz hydrobase::rho hydrobase::press hydrobase::eps HydroBase::vel GRHydro::dens GRHydro::tau GRHydro::scon GRHydro::GRHydro_tracers GRHydro::GRHydro_cons_tracers GRHydro::GRHydro_tracer_rhs GRHydro::GRHydro_tracer_flux"
+IOASCII::out1D_vars 			= 	"hydrobase::w_lorentz hydrobase::rho hydrobase::press hydrobase::eps HydroBase::vel GRHydro::dens GRHydro::tau GRHydro::scon GRHydro::GRHydro_tracers"
 
 CarpetIOHDF5::one_file_per_group             = "yes"
 CarpetIOHDF5::open_one_input_file_at_a_time  = "yes"
 CarpetIOHDF5::out3D_every = 1000
 CarpetIOHDF5::out3D_vars = "
-hydrobase::w_lorentz hydrobase::rho hydrobase::press hydrobase::eps HydroBase::vel GRHydro::GRHydro_tracers GRHydro::GRHydro_cons_tracers GRHydro::GRHydro_tracer_rhs GRHydro::GRHydro_tracer_flux
+hydrobase::w_lorentz hydrobase::rho hydrobase::press hydrobase::eps HydroBase::vel GRHydro::GRHydro_tracers
 "

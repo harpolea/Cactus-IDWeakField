@@ -36,7 +36,7 @@ submit job (queue can be test for small stuff or otherwise batch):
 
 check job status with
 
-    qstat
+    qstat -s
 
 */
 
